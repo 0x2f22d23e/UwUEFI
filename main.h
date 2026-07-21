@@ -16,6 +16,7 @@
 #define GiB 0x40000000
 #define MiB 0x200000
 
+#define CDIR_FILENAME_LEN 38
 #define CORE0_32BIT_INIT 0x9F00 // repurposed for CUefi struct
 
 #define STD_ISO_CRC32 0x1430e0ab
@@ -45,6 +46,14 @@
 #define SYS_16MEG_AREA_LIMIT 0x1000000
 
 typedef struct {
+    UINT16 attr;
+    UINT8 name[CDIR_FILENAME_LEN];
+    UINT64 clus;
+    UINT64 size;
+    UINT64 datetime;
+} __attribute__((packed)) CDirEntry;
+
+typedef struct {
     UINT64 next;
     UINT64 last;
     UINT32 mb_signature;
@@ -63,8 +72,6 @@ typedef struct {
     UINT64 gop_fb_size;
     UINT64 gop_fb_xres;
     UINT64 gop_fb_yres;
-    UINT64 gop_raw_row;
-    UINT64 gop_raw_col;
     UINT64 sys_tbl_ptr;
     UINT64 total_mem;
 } __attribute__((packed)) CUefi;

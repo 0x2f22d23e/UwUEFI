@@ -127,8 +127,6 @@ void GopSetModeAndPopulateInfo()
     u->gop_fb_size = Gop->Mode->FrameBufferSize;
     u->gop_fb_xres = Gop->Mode->Info->HorizontalResolution;
     u->gop_fb_yres = Gop->Mode->Info->VerticalResolution;
-    u->gop_raw_row = 0;
-    u->gop_raw_col = 0;
 }
 
 void InitMemMaps(UINT64 TotalMemory)
