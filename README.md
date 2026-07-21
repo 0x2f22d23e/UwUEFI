@@ -14,6 +14,22 @@ or
 
 Put a EFI-bootable filesystem on a flash drive, put `build/BOOTX64.EFI` in `/EFI/BOOT/`, and `iso/TempleOS.ISO` in `/` on your filesystem.
 
+### BUILDING THE BOOTLOADER
+
+Uncomment, comment `kernel_dyn.c`, `kernel.c`
+
+Run `scripts/get-baseline-dump` to generate `Kernel_baseline.c`
+
+Build the disk image
+
+### (Optional: Coalesce the Kernel patches)
+
+Run `scripts/make-kernel-patch` to generate `kernel.c`
+
+Comment, uncomment `kernel_dyn.c`, `kernel.c`
+
+Build the disk image
+
 ### BOOT OPTIONS
 
 You can put a `boot.ini` in `/` on your filesystem to set boot time options. Use `key=value` format.
