@@ -30,17 +30,24 @@ U0 PatchJmpRel32(U32 from, U32 to)
     *((from + 1)(I32*)) = to - from - 5;
 }
 
-U32 gop_palette_std[COLORS_NUM] = { 0xFF000000, 0xFF0000AA, 0xFF00AA00, 0xFF00AAAA, 0xFFAA0000, 0xFFAA00AA, 0xFFAA5500, 0xFFAAAAAA, 0xFF555555, 0xFF5555FF, 0xFF55FF55, 0xFF55FFFF, 0xFFFF5555, 0xFFFF55FF, 0xFFFFFF55, 0xFFFFFFFF };
+U32 gop_palette_std[COLORS_NUM] = {
+    0xFF000000, 0xFF0000AA, 0xFF00AA00, 0xFF00AAAA, 0xFFAA0000, 0xFFAA00AA, 0xFFAA5500, 0xFFAAAAAA,
+    0xFF555555, 0xFF5555FF, 0xFF55FF55, 0xFF55FFFF, 0xFFFF5555, 0xFFFF55FF, 0xFFFFFF55, 0xFFFFFFFF };
+
 U0 GrUpdateGopGraphics()
 {
-    CUefi *u = CORE0_32BIT_INIT;
-    U32* p = u->gop_fb_base;
-    I64 x, y, i;
-    for (y = 0; y < GR_HEIGHT; y++) {
-        for (x = 0; x < GR_WIDTH; x++) {
-            i = (y * GR_WIDTH) + x;
-            p[i] = gop_palette_std[gr.dc2->body[i]];
-        }
+    U64* u = CORE0_32BIT_INIT;
+    U64 reg RDI dst = u[0];
+    U64 reg RSI src = gr.dc2->body;
+    U64 reg RDX lut = &gop_palette_std;
+    no_warn dst, src, lut;
+    asm {
+        DU32 0x048bc931, 0x0c44888a, 0x0c6488c0, 0x10e8c1d0, 0xe00c4488, 0xf00c6488, 0xf983c1ff, 0xf3e37c10,
+        0x24646f0f, 0x6f0ff3c0, 0xf3d0246c, 0x24746f0f, 0x6f0ff3e0, 0xb9f0247c, 0x00004b00, 0x066f0ff3,
+        0xcc6f0f66, 0xd56f0f66, 0xde6f0f66, 0x6f0f4466, 0x380f66c7, 0x0f66c800, 0x66d00038, 0xd800380f,
+        0x380f4466, 0x0f66c000, 0x0f66c16f, 0x0f66c260, 0x0f66ca68, 0x4166d36f, 0x66d0600f, 0xd8680f41,
+        0x6f0f4466, 0x0f4466c0, 0x0f66c261, 0x0f66c269, 0x0f66d16f, 0x0f66d361, 0x4466cb69, 0x6607e70f,
+        0x1047e70f, 0x57e70f66, 0xe70f6620, 0x8348304f, 0x834810c6, 0xff4840c7, 0x0f8175c9, 0x9090f8ae;
     }
 }
 PatchJmpRel32(&GrUpdateVGAGraphics, &GrUpdateGopGraphics);
