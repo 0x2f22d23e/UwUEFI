@@ -3,4 +3,5 @@ tmp/
 patches/Kernel_baseline.c
 patches/Kernel_coalesced.bin
 patches/kernel.c
+patches/runtime.c
 boot.ini
