@@ -1,0 +1,15 @@
+#!/bin/sh
+mkdir -p patches
+KERNEL_C=patches/kernel.c
+rm -f Kernel_coalesced.bin
+rm -rf tmp && mkdir tmp
+dd if=iso/TempleOS.ISO of=tmp/Kernel_iso.bin bs=1 skip=52224 count=189952
+gdb -x gdb/coalesce.init &
+qemu-system-x86_64 -s -S -enable-kvm -m 1024 -net none -bios /usr/share/edk2/ovmf/OVMF_CODE.fd -device virtio-blk-pci,drive=disk1,bootindex=1 -drive file=build/disk.img,format=raw,id=disk1,if=none 
+scripts/patch tmp/Kernel_iso.bin patches/Kernel_coalesced.bin tmp/Kernel.patch
+printf "// generated with make-kernel-patch\n\n" > $KERNEL_C
+printf "void DoKernelPatch() {\n" >> $KERNEL_C
+xxd -n Kernel_patch -i tmp/Kernel.patch >> $KERNEL_C
+printf "UINTN OutputSize;\n" >> $KERNEL_C
+printf "ApplyPatch((VOID*)(KERNEL_BIN_SRC), KERNEL_BIN_SIZE, (VOID*)Kernel_patch, Kernel_patch_len, (VOID*)(KERNEL_BIN_DST), &OutputSize);\n}" >> $KERNEL_C
+rm -rf tmp

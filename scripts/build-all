@@ -1,0 +1,160 @@
+#!/usr/bin/python3 -u
+from pathlib import Path
+import os
+import subprocess
+import sys
+import time
+
+script_name = "build-all"
+
+if len(sys.argv) < 2:
+    raise ValueError(f"{script_name}: wrong number of arguments")
+
+
+class AttrDict(dict):
+    def __init__(self, *args, **kwargs):
+        super(AttrDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
+
+build = AttrDict()
+
+
+def OK(index=1):
+    step_name = str(sys._getframe(index).f_code.co_name)
+    print(f"\u2705 {script_name}: {step_name}")
+
+
+def TRY(cmd):
+    step_name = str(sys._getframe(1).f_code.co_name)
+    res = os.system(cmd)
+    if res:
+        error_code = str(res)
+        raise ValueError(
+            f"{script_name}: step '{step_name}' failed, error code {error_code}"
+        )
+    else:
+        OK(2)
+
+
+def init_values():
+    global build
+    build.hv = AttrDict()
+    build.home_path = f"{Path.home()}/"
+    build.edk2_path = f"{build.home_path}cloned/edk2/"
+    build.project_path = f"{sys.argv[1]}/"
+    build.disk_image = f"{build.project_path}build/disk.img"
+    build.gdb_init_file = f"{build.project_path}gdb/default.init"
+    build.project_name = build.project_path.rsplit("/")[-2]
+    build.qemu_bin_path = f"qemu-system-x86_64"
+    build.qemu_bin_args = " ".join(
+        [
+            f"-display sdl,grab-mod=rctrl",
+            f"-enable-kvm",
+            f"-smp cores=4",
+            f"-s -S" if build.debug else f"",
+            f"-m 8192",
+            f"-net none",
+            f"-bios /usr/share/edk2/ovmf/OVMF_CODE.fd",
+            f"-device virtio-blk-pci,drive=disk1,bootindex=1",
+            f"-drive file={build.disk_image},format=raw,id=disk1,if=none",
+            f"-chardev stdio,id=char0,mux=on,signal=off",
+            f"-serial chardev:char0",
+            f"-monitor telnet::45454,server,nowait",
+        ]
+    )
+
+    build.templeos_iso_file = f"{build.project_path}iso/TempleOS.ISO"
+    OK()
+
+
+def kill_running_qemu_processes():
+    TRY(f'killall -e "{build.qemu_bin_path}" || true')
+
+
+def kill_running_gdb_processes():
+    TRY(f'killall -e "gdb" || true')
+
+
+def clang_format_src_files():
+    TRY(
+        "find "
+        + build.project_path
+        + ' -not -path "*/deps/*" -type f -name "*.c" | xargs -I {} -n1 -r clang-format -i --style=file:'
+        + build.project_path
+        + ".clang-format {}"
+    )
+
+
+def clang_format_header_files():
+    TRY(
+        "find "
+        + build.project_path
+        + ' -not -path "*/deps/*" -type f -name "*.h" | xargs -I {} -n1 -r clang-format -i --style=file:'
+        + build.project_path
+        + ".clang-format {}"
+    )
+
+
+def refresh_build_path():
+    TRY(f"rm -rf {build.project_path}build && mkdir -p {build.project_path}build")
+
+
+def build_uwuefi():
+    edk2_build_cmd = f"build -a X64 -m {build.project_path}UwUEFI.inf -p {build.project_path}UwUEFI.dsc -b RELEASE -t GCC"
+    TRY(
+        f" && ".join(
+            [
+                f"cd {build.edk2_path}",
+                f"source ./edksetup.sh",
+                f"export PACKAGES_PATH={build.edk2_path}:{build.project_path}",
+                f"cd {build.project_path}",
+                edk2_build_cmd,
+                edk2_build_cmd,
+                f"cp {build.edk2_path}Build/UwUEFI/RELEASE_GCC/X64/UwUEFI.efi {build.project_path}build/BOOTX64.EFI",
+            ]
+        )
+    )
+
+
+def build_disk_image():
+    TRY(
+        f" && ".join(
+            [
+                f"dd if=/dev/zero of={build.disk_image} bs=1M count=64",
+                f'printf "g\nn\n1\n2048\n\nt\n1\nw\n" | fdisk {build.disk_image}',
+                f"mformat -i {build.disk_image}@@1M -F -N 1 ::",
+                f"mmd -i {build.disk_image}@@1M ::/EFI",
+                f"mmd -i {build.disk_image}@@1M ::/EFI/BOOT",
+                f"mcopy -i {build.disk_image}@@1M {build.project_path}build/BOOTX64.EFI ::/EFI/BOOT/BOOTX64.EFI",
+                f"mcopy -i {build.disk_image}@@1M {build.project_path}iso/TempleOS.ISO ::/TempleOS.ISO",
+                f"mcopy -i {build.disk_image}@@1M {build.project_path}boot.ini ::/boot.ini || true",
+            ]
+        )
+    )
+
+
+def gdb():
+    TRY(f'xfce4-terminal -e "gdb -x {build.gdb_init_file}" &')
+
+
+def run():
+    TRY(f" ".join([build.qemu_bin_path, build.qemu_bin_args]))
+
+
+def build_all():
+    build.debug = False
+    init_values()
+    kill_running_qemu_processes()
+    kill_running_gdb_processes()
+    clang_format_src_files()
+    clang_format_header_files()
+    refresh_build_path()
+    build_uwuefi()
+    build_disk_image()
+    if build.debug:
+        gdb()
+    run()
+
+
+build_all()

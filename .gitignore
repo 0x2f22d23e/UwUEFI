@@ -1,0 +1,6 @@
+build/
+tmp/
+patches/Kernel_baseline.c
+patches/Kernel_coalesced.bin
+patches/kernel.c
+boot.ini

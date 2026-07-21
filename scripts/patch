@@ -1,0 +1,51 @@
+#!/usr/bin/python3
+import sys
+
+
+def generate_patch(old_path, new_path, patch_path):
+    with open(old_path, "rb") as f:
+        old_data = bytearray(f.read())
+    with open(new_path, "rb") as f:
+        new_data = bytearray(f.read())
+
+    patch = bytearray()
+    patch.extend(len(new_data).to_bytes(4, byteorder="little"))
+
+    i = 0
+    while i < len(new_data):
+        if i < len(old_data) and old_data[i] == new_data[i]:
+            i += 1
+            continue
+
+        start_offset = i
+
+        while i < len(new_data):
+            if i < len(old_data) and old_data[i] == new_data[i]:
+                lookahead = 0
+                while (
+                    i + lookahead < len(new_data)
+                    and i + lookahead < len(old_data)
+                    and old_data[i + lookahead] == new_data[i + lookahead]
+                ):
+                    lookahead += 1
+                if lookahead >= 16:
+                    break
+            i += 1
+
+        block_len = i - start_offset
+
+        patch.extend(start_offset.to_bytes(4, byteorder="little"))
+        patch.extend(block_len.to_bytes(2, byteorder="little"))
+        patch.extend(new_data[start_offset : start_offset + block_len])
+
+    with open(patch_path, "wb") as f:
+        f.write(patch)
+
+    print(f"patch size: {len(patch)} bytes.")
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 4:
+        print("Usage: patch <old_file> <new_file> <patch_file>")
+        sys.exit(1)
+    generate_patch(sys.argv[1], sys.argv[2], sys.argv[3])

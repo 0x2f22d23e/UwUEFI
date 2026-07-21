@@ -1,0 +1,27 @@
+set architecture i386:x86-64
+set disassembly-flavor intel
+set disassemble-next-line on
+set print asm-demangle on
+set remotetimeout 2
+
+set confirm off
+add-symbol-file gdb/Kernel.elf 0
+set confirm on
+
+python
+import time
+connected = False
+while not connected:
+    try:
+        gdb.execute("target remote :1234", to_string=True)
+        connected = True
+    except:
+        time.sleep(0.1)
+end
+
+# set breakpoint at KStart64
+hbreak *0x9f75
+c
+
+dump binary memory patches/Kernel_coalesced.bin 0x7c00 0x7c00+0x2e600
+monitor quit

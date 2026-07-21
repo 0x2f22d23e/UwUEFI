@@ -1,0 +1,10 @@
+#!/bin/sh
+rm -f patches/Kernel_baseline.c
+rm -rf tmp && mkdir tmp
+gdb -x gdb/baseline.init &
+qemu-system-x86_64 -s -S -enable-kvm -m 1024 -cdrom iso/TempleOS.ISO
+dd if=iso/TempleOS.ISO of=tmp/Kernel_iso.bin bs=1 skip=52224 count=189952
+scripts/patch tmp/Kernel_iso.bin tmp/Kernel_baseline.bin tmp/Kernel.patch
+printf "// generated with get-baseline-dump\n\n" > patches/Kernel_baseline.c
+xxd -n Kernel_baseline -i tmp/Kernel.patch >> patches/Kernel_baseline.c
+rm -rf tmp

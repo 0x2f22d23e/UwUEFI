@@ -1,0 +1,28 @@
+set architecture i386:x86-64
+set disassembly-flavor intel
+set disassemble-next-line on
+set print asm-demangle on
+set remotetimeout 2
+
+set confirm off
+add-symbol-file gdb/Kernel.elf 0
+set confirm on
+
+python
+import time
+connected = False
+while not connected:
+    try:
+        gdb.execute("target remote :1234", to_string=True)
+        connected = True
+    except:
+        time.sleep(0.1)
+end
+
+# set breakpoint at KStart64
+hbreak *0x9f75
+c
+
+while ($rip > 0x7c00 && $rip < 0x315c0)
+  si
+end
