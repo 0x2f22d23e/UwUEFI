@@ -1,3 +1,23 @@
 # UwUEFI
 
-A 萌え萌えキュン bootloader for TempleOS
+A 萌え萌えキュン UEFI bootloader for TempleOS
+
+![TempleOS running on a UEFI system with no BIOS](https://codeberg.org/0x2f22d23e/UwUEFI/raw/branch/main/screenshot.png)
+
+### HOWTO
+
+You can use the `.vscode` build task, or manually run `scripts/build-all`, to build a smol disk image with the bootloader and `TempleOS.ISO`, and launch a VM.
+
+You can write the disk image to a flash drive with `dd if=build/disk.img of=/dev/sdX bs=64M status=progress && sync`,
+
+or
+
+Put a EFI-bootable filesystem on a flash drive, put `build/BOOTX64.EFI` in `/EFI/BOOT/`, and `iso/TempleOS.ISO` in `/` on your filesystem.
+
+### BOOT OPTIONS
+
+You can put a `boot.ini` in `/` on your filesystem to set boot time options. Use `key=value` format.
+
+`IsoFilePath` to specify a full path to TempleOS.ISO
+
+`MaxTotalMemory` to specify total memory limit in MiB (useful on bare-metal to workaround crashes)
