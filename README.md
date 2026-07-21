@@ -6,7 +6,7 @@ A 萌え萌えキュン UEFI bootloader for TempleOS
 
 ### HOWTO
 
-You can use the `.vscode` build task, or manually run `scripts/build-all`, to build a smol disk image with the bootloader and `TempleOS.ISO`, and launch a VM.
+You can grab pre-built files from [Releases](https://codeberg.org/0x2f22d23e/UwUEFI/releases), or generate them yourself using either the `.vscode` build task, or manually running `scripts/build-all`, to build a smol disk image with the bootloader and `TempleOS.ISO`, and launch a VM.
 
 You can write the disk image to a flash drive with `dd if=build/disk.img of=/dev/sdX bs=64M status=progress && sync`,
 
