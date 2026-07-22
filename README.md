@@ -32,8 +32,14 @@ After initial build, set `build.coalesced = True` in `scripts/build-all` and re-
 
 You can put a `boot.ini` in `/` on your filesystem to set boot time options. Use `key=value` format.
 
-`IsoFilePath` to specify a full path to TempleOS.ISO
+`IsoFilePath=path` to specify a full path to TempleOS.ISO
 
-`MaxTotalMemory` to specify total memory limit in MiB (useful on bare-metal to workaround crashes)
+`MaxTotalMemory=size` to specify total memory limit in MiB
 
 `MultiCore=off` to disable MultiCore start
+
+### TROUBLESHOOTING
+
+If boot just shows a black screen, try setting `MaxTotalMemory` to a safe value, like `1024` or `2048`.
+
+If boot crashes in `IRQ_TIMER` or displays jumbled characters everywhere, try setting `MultiCore=off`.
