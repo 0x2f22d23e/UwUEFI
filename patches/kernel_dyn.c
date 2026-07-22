@@ -10,7 +10,6 @@ void ApplyBaselinePatch()
 #define pDrvIsWritable 0x259e2
 #define pFileWrite 0x2e0e0
 #define pPCIReadU16 0x1f3f1
-#define pPCIReadU32 0x1f491
 #define pPutS 0x18cf6
 #define pRawPutChar 0x161b6
 
@@ -43,7 +42,7 @@ void PatchBlkDevsInitAll()
     COPY_PAYLOAD
 }
 
-void PatchPci()
+void PatchPCIReadU16()
 {
     UINT8* dst;
     UINT32 len;
@@ -146,7 +145,7 @@ void PatchRawPutChar()
 
 void PatchPutS()
 {
-    /* hijacks PutS for serial output */
+    // Override PutS for serial output; used in early debugging
     char* payload = "\x55\x48\x8b\xec\x48\x83\xec\x08\x56\x57\x48\x8b\x75\x10\x48\x0f\xb6"
                     "\x06\x48\xff\xc6\x48\x8b\xf8\x48\x85\xc0\x74\x0a\x48\x8b\xc7\x66\xba"
                     "\xf8\x03\xee\xeb\xe7\x5f\x5e\xc9\xc2\x08\x00";
@@ -157,7 +156,7 @@ void PatchPutS()
 
 void PatchDrvIsWritable()
 {
-    // Always returns FALSE
+    // Always returns FALSE; used during boot process
     char* payload = "\x33\xc0\x49\x5a\x5f\x5e\xc9\xc2\x10\x00";
     UINT32 len = 10;
     UINT8* dst = (VOID*)pDrvIsWritable + 0x0c;
@@ -165,7 +164,7 @@ void PatchDrvIsWritable()
 }
 void TempPatchFileWrite()
 {
-    // Returns without writing
+    // Return without writing data; used in early debugging
     char* payload = "\x49\x5f\x49\x5e\x49\x5d\x49\x5c\x49\x5b\x49\x5a\x5f"
                     "\x5e\xc9\xc2\x28\x00";
     UINT32 len = 18;
@@ -178,7 +177,7 @@ void DoKernelPatch()
     ApplyBaselinePatch();
     // PatchPutS();
     PatchBlkDevsInitAll();
-    PatchPci();
+    PatchPCIReadU16();
     PatchRawPutChar();
     PatchDrvIsWritable();
     // TempPatchFileWrite();
