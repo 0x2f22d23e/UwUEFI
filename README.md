@@ -26,6 +26,8 @@ You will need to modify `build.edk2_path` in `scripts/build-all` to specify the 
 
 ### (Optional: Coalesce the Kernel patches)
 
+This can result in a *slightly* smaller file size for `build/BOOTX64.EFI`. This build option is used for [releases](https://codeberg.org/0x2f22d23e/UwUEFI/releases).
+
 After initial build, set `build.coalesced = True` in `scripts/build-all` and re-run the build.
 
 ### BOOT OPTIONS
