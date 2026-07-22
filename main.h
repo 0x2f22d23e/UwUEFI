@@ -9,6 +9,31 @@
         dst[i] = payload[i];           \
     }
 
+static inline UINT32
+In32(
+    IN UINT16 Port)
+{
+    UINT32 Data;
+
+    __asm__ __volatile__(
+        "inl %w1, %0"
+        : "=a"(Data)
+        : "d"(Port));
+
+    return Data;
+}
+
+static inline VOID
+Out32(
+    IN UINT16 Port,
+    IN UINT32 Data)
+{
+    __asm__ __volatile__(
+        "outl %0, %w1"
+        :
+        : "a"(Data), "d"(Port));
+}
+
 #define MBS_UNUSED_SIGNATURE_VAL 0x6e55424d //'MBUn'
 #define MEM_PAG_BITS 9
 
@@ -42,8 +67,12 @@
 #define MEM_PML3 0x9280
 #define MEM_PML4 0x9288
 
+#define PCI_CFG_ADDR 0xCF8
+#define PCI_CFG_DATA 0xCFC
+
 #define SYS_FIXED_AREA 0x100000
 #define SYS_16MEG_AREA_LIMIT 0x1000000
+#define SYS_PCI_BUSES 0x8016
 
 typedef struct {
     UINT16 attr;

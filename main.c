@@ -157,6 +157,25 @@ void InitMemMaps(UINT64 TotalMemory)
     }
 }
 
+void GetPciBusInfo()
+{
+    UINT32 Address;
+    UINT32 Data;
+    UINT32 TotalPciBuses = 0;
+
+    for (UINT32 Bus = 0; Bus < 256; Bus++) {
+        Address = (UINT32)((1 << 31) | (Bus << 16) | (0 << 11) | (0 << 8));
+        Out32(PCI_CFG_ADDR, Address);
+
+        Data = In32(PCI_CFG_DATA);
+        if ((Data != 0xFFFFFFFF) && (Data != 0x00000000)) {
+            TotalPciBuses = Bus;
+        }
+    }
+
+    *(UINT16*)SYS_PCI_BUSES = (TotalPciBuses + 1);
+}
+
 void InitMemVars(UINT64 TotalMemory)
 {
     if (TotalMemory >= 4000000000) {
@@ -183,6 +202,7 @@ void InitMemVars(UINT64 TotalMemory)
 void KStart16(UINT64 TotalMemory)
 {
     InitMemMaps(TotalMemory);
+    GetPciBusInfo();
 }
 
 void InitPageTables(UINT64 TotalMemory)
