@@ -47,6 +47,7 @@ def init_values():
     build.disk_image = f"{build.project_path}build/disk.img"
     build.gdb_init_file = f"{build.project_path}gdb/default.init"
     build.project_name = build.project_path.rsplit("/")[-2]
+    build.tools_path = f"{build.project_path}tools/"
     build.qemu_bin_path = f"qemu-system-x86_64"
     build.qemu_bin_args = " ".join(
         [
@@ -110,7 +111,7 @@ def generate_runtime_patch():
                 f"rm -f {build.project_path}{runtime_c}",
                 f"mkdir {tmp_path}",
                 f"cp src/runtime/Runtime.HC {tmp_path}",
-                f"todotz {tmp_path}Runtime.HC",
+                f"{build.tools_path}todotz.bin {tmp_path}Runtime.HC",
                 f"cat src/runtime/prologue.c > {runtime_c}",
                 f"xxd -n Runtime_HC_Z -i {tmp_path}Runtime.HC.Z >> {runtime_c}",
                 f"cat src/runtime/epilogue.c >> {runtime_c}",
@@ -118,6 +119,21 @@ def generate_runtime_patch():
             ]
         )
     )
+
+
+def build_tools_todotz():
+    if not os.path.exists(f"{build.tools_path}todotz.bin"):
+        TRY(
+            f" && ".join(
+                [
+                    f"mkdir -p {build.tools_path}",
+                    f"cd {build.tools_path}",
+                    f"git clone --depth=1 https://git.checksum.fail/alec/todotz",
+                    f"g++ -o todotz.bin todotz/todotz.cpp",
+                    f"rm -rf todotz"
+                ]
+            )
+        )
 
 
 def build_uwuefi():
@@ -170,6 +186,7 @@ def build_all():
     clang_format_src_files()
     clang_format_header_files()
     refresh_build_path()
+    build_tools_todotz()
     generate_runtime_patch()
     build_uwuefi()
     build_disk_image()

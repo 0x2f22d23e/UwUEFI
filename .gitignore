@@ -1,5 +1,6 @@
 build/
 tmp/
+tools/
 patches/Kernel_baseline.c
 patches/Kernel_coalesced.bin
 patches/kernel.c
