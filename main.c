@@ -1,8 +1,7 @@
 /* clang-format off */
 #include "main.h"
 #include "ini.c"
-//#include "patches/kernel_dyn.c"
-#include "patches/kernel.c"
+#include "patches/build_type.c"
 #include "patches/runtime.c"
 /* clang-format on */
 

@@ -10,7 +10,7 @@ The entire bootloader is about ⅕ of the Kernel size, and provides all necessar
 
 ### HOWTO
 
-You can grab pre-built files from [Releases](https://codeberg.org/0x2f22d23e/UwUEFI/releases), or generate them yourself using either the `.vscode` build task, or manually running `scripts/build-all`, to build a smol disk image with the bootloader and `TempleOS.ISO`, and launch a VM.
+You can grab pre-built files from [Releases](https://codeberg.org/0x2f22d23e/UwUEFI/releases), or build them yourself using the instructions below.
 
 You can write the disk image to a flash drive with `dd if=build/disk.img of=/dev/sdX bs=64M status=progress && sync`,
 
@@ -20,19 +20,13 @@ Put a EFI-bootable filesystem on a flash drive, put `build/BOOTX64.EFI` in `/EFI
 
 ### BUILDING THE BOOTLOADER
 
-Uncomment, comment `kernel_dyn.c`, `kernel.c`
+Use the `.vscode` build task, or manually run `scripts/build-all` to create a smol disk image with the bootloader and `TempleOS.ISO`, and launch a VM.
 
-Run `scripts/get-baseline-dump` to generate `Kernel_baseline.c`
-
-Build the disk image
+You will need to modify `build.edk2_path` in `scripts/build-all` to specify the path to Edk2.
 
 ### (Optional: Coalesce the Kernel patches)
 
-Run `scripts/make-kernel-patch` to generate `kernel.c`
-
-Comment, uncomment `kernel_dyn.c`, `kernel.c`
-
-Build the disk image
+After initial build, set `build.coalesced = True` in `scripts/build-all` and re-run the build.
 
 ### BOOT OPTIONS
 

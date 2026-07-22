@@ -98,8 +98,10 @@ def clang_format_header_files():
     )
 
 
+
 def refresh_build_path():
-    TRY(f"rm -rf {build.project_path}build && mkdir -p {build.project_path}build")
+    refresh_cmd = f"rm -rf {build.project_path}build && mkdir -p {build.project_path}build" if not build.coalesced else f"rm -f {build.project_path}build/BOOTX64.EFI"
+    TRY(refresh_cmd)
 
 
 def generate_runtime_patch():
@@ -130,21 +132,26 @@ def build_tools_todotz():
                     f"cd {build.tools_path}",
                     f"git clone --depth=1 https://git.checksum.fail/alec/todotz",
                     f"g++ -o todotz.bin todotz/todotz.cpp",
-                    f"rm -rf todotz"
+                    f"rm -rf todotz",
                 ]
             )
         )
 
 
 def build_uwuefi():
+    build_type_cmd = f"printf '#include \"{f"kernel.c" if build.coalesced else f"kernel_dyn.c"}\"' > {build.project_path}patches/build_type.c"
     edk2_build_cmd = f"build -a X64 -m {build.project_path}UwUEFI.inf -p {build.project_path}UwUEFI.dsc -b RELEASE -t GCC"
     TRY(
         f" && ".join(
             [
+                f"scripts/get-baseline-dump"
+                if not build.coalesced
+                else f"scripts/make-kernel-patch",
                 f"cd {build.edk2_path}",
                 f"source ./edksetup.sh",
                 f"export PACKAGES_PATH={build.edk2_path}:{build.project_path}",
                 f"cd {build.project_path}",
+                build_type_cmd,
                 edk2_build_cmd,
                 edk2_build_cmd,
                 f"cp {build.edk2_path}Build/UwUEFI/RELEASE_GCC/X64/UwUEFI.efi {build.project_path}build/BOOTX64.EFI",
@@ -157,6 +164,7 @@ def build_disk_image():
     TRY(
         f" && ".join(
             [
+                f"rm -f {build.disk_image}",
                 f"dd if=/dev/zero of={build.disk_image} bs=1M count=64",
                 f'printf "g\nn\n1\n2048\n\nt\n1\nw\n" | fdisk {build.disk_image}',
                 f"mformat -i {build.disk_image}@@1M -F -N 1 ::",
@@ -180,6 +188,7 @@ def run():
 
 def build_all():
     build.debug = False
+    build.coalesced = False
     init_values()
     kill_running_qemu_processes()
     kill_running_gdb_processes()
