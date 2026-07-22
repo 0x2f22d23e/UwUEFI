@@ -35,3 +35,5 @@ You can put a `boot.ini` in `/` on your filesystem to set boot time options. Use
 `IsoFilePath` to specify a full path to TempleOS.ISO
 
 `MaxTotalMemory` to specify total memory limit in MiB (useful on bare-metal to workaround crashes)
+
+`MultiCore=off` to disable MultiCore start

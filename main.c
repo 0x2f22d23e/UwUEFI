@@ -8,6 +8,7 @@
 CHAR16* IniFilePath = L"\\boot.ini";
 CHAR16* IsoFilePath = L"\\TempleOS.ISO";
 UINT64 MaxTotalMemory = 0;
+BOOLEAN SingleCore = FALSE;
 BOOLEAN SkipCrcCheck = FALSE;
 
 EFI_STATUS ExitUefi(EFI_HANDLE ImageHandle)
@@ -56,6 +57,9 @@ void ParseIniFile(UINT64 FileSize)
     while (ParseIniKeyValue(STD_ISO_PTR, FileSize, (UINT8*)&key, (UINT8*)&value, &i)) {
         if (!MEMCMP((UINT8*)&key, (UINT8*)"IsoFilePath", 11)) {
             IsoFilePath = CatSPrint(NULL, L"%a", (CHAR8*)&value);
+        }
+        if (!MEMCMP((UINT8*)&key, (UINT8*)"MultiCore", 9)) {
+            SingleCore = !MEMCMP((UINT8*)&value, (UINT8*)"off", 3);
         }
         if (!MEMCMP((UINT8*)&key, (UINT8*)"MaxTotalMemory", 9)) {
             if (ParseIniU64((CHAR8*)&value, (UINT64*)&u64)) {
@@ -312,6 +316,9 @@ UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE* SystemTable)
     DoRuntimePatches();
 
     UINT64 TotalMemory = MaxTotalMemory ? (MaxTotalMemory < ActualTotalMemory ? MaxTotalMemory : ActualTotalMemory) : ActualTotalMemory;
+    if (SingleCore) {
+        MEMCPY((VOID*)0x1ff6a, (VOID*)"\x55\x48\x8b\xec\x5d\xc3", 6);
+    }
 
     GopSetModeAndPopulateInfo();
     CUefi* u = (CUefi*)CORE0_32BIT_INIT;
