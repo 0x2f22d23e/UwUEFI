@@ -21,6 +21,7 @@ end
 
 # set breakpoint at KStart64
 hbreak *0x9f75
+si
 c
 
 while ($rip > 0x7c00 && $rip < 0x315c0)

@@ -21,6 +21,7 @@ end
 
 # set breakpoint at KStart64
 hbreak *0x9f75
+si
 c
 
 dump binary memory tmp/Kernel_baseline.bin 0x7c00 0x7c00+0x2e600
