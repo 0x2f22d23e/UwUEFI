@@ -29,3 +29,10 @@ U0 PatchJmpRel32(U32 from, U32 to)
     *(from(U8*)) = 0xe9;
     *((from + 1)(I32*)) = to - from - 5;
 }
+
+Bool IsKVM()
+{
+    U64 c[4];
+    CPUId(0x40000000, c);
+    return c[1] == 'KVMK';
+}

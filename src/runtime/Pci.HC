@@ -52,3 +52,10 @@ PatchJmpRel32(&PCIWriteU8, &_PCIWriteU8);
 PatchJmpRel32(&PCIWriteU16, &_PCIWriteU16);
 PatchJmpRel32(&PCIWriteU32, &_PCIWriteU32);
 PatchJmpRel32(&PCIClassFind, &_PCIClassFind);
+
+U0 PciEnableBusMaster(I64 d)
+{
+    U16 v = PCIReadU16(d.u8[2], d.u8[1], d.u8[0], 0x04);
+    v = v | 1 << 2;
+    PCIWriteU16(d.u8[2], d.u8[1], d.u8[0], 0x04, v);
+}
