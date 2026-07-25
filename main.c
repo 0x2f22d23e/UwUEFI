@@ -64,7 +64,7 @@ void ParseIniFile(UINT64 FileSize)
     UINT64 i = 0;
     UINT64 u64 = 0;
 
-    while (ParseIniKeyValue(STD_ISO_PTR, FileSize, (UINT8*)&key, (UINT8*)&value, &i)) {
+    while (ParseIniKeyValue(BOOT_INI_PTR, FileSize, (UINT8*)&key, (UINT8*)&value, &i)) {
         if (!MEMCMP((UINT8*)&key, (UINT8*)"IsoFilePath", 11)) {
             IsoFilePath = CatSPrint(NULL, L"%a", (CHAR8*)&value);
         }
