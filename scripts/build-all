@@ -112,7 +112,7 @@ def generate_runtime_patch():
             [
                 f"rm -f {build.project_path}{runtime_c}",
                 f"mkdir {tmp_path}",
-                f"cp src/runtime/Runtime.HC {tmp_path}",
+                f"sed 's/^/src\\/runtime\\//' src/runtime/modules.txt | xargs cat > {tmp_path}Runtime.HC",
                 f"{build.tools_path}todotz.bin {tmp_path}Runtime.HC",
                 f"cat src/runtime/prologue.c > {runtime_c}",
                 f"xxd -n Runtime_HC_Z -i {tmp_path}Runtime.HC.Z >> {runtime_c}",
