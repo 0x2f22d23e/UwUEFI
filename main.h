@@ -41,13 +41,16 @@ Out32(
 #define GiB 0x40000000
 #define MiB 0x200000
 
+#define BOOT_INI_PTR 0x10000000
+#define BOOT_EFI_PTR 0x10000400
+
 #define CDIR_FILENAME_LEN 38
 #define CORE0_32BIT_INIT 0x9F00 // repurposed for CUefi struct
 
 #define STD_ISO_CRC32 0x1430e0ab
-#define STD_ISO_PTR 0x10000000
+#define STD_ISO_PTR 0x10020000
 
-#define KERNEL_BIN_SRC 0x1000cc00
+#define KERNEL_BIN_SRC STD_ISO_PTR + 0xcc00
 #define KERNEL_BIN_DST 0x7c00
 #define KERNEL_BIN_SIZE 0x2e600
 
@@ -98,12 +101,21 @@ typedef struct {
 
 typedef struct {
     UINT64 gop_fb_base;
-    UINT64 gop_fb_size;
-    UINT64 gop_fb_xres;
-    UINT64 gop_fb_yres;
+    UINT32 gop_fb_size;
+    UINT32 gop_fb_xres;
+    UINT32 gop_fb_yres;
     UINT64 sys_tbl_ptr;
     UINT64 total_mem;
+    UINT64 boot_efi_ptr;
+    UINT32 boot_efi_size;
+    UINT64 boot_ini_ptr;
+    UINT32 boot_ini_size;
 } __attribute__((packed)) CUefi;
+
+typedef struct {
+    UINT64 ptr;
+    UINT32 size;
+} CFileData;
 
 struct __attribute__((packed)) {
     UINT16 Limit;

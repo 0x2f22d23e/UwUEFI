@@ -1,10 +1,14 @@
 class CUefi {
     U64 gop_fb_base;
-    U64 gop_fb_size;
-    U64 gop_fb_xres;
-    U64 gop_fb_yres;
+    U32 gop_fb_size;
+    U32 gop_fb_xres;
+    U32 gop_fb_yres;
     U64 sys_tbl_ptr;
     U64 total_mem;
+    U64 boot_efi_ptr;
+    U32 boot_efi_size;
+    U64 boot_ini_ptr;
+    U32 boot_ini_size;
 };
 
 U0 (*SseOn)() = "\x55\x48\x8b\xec\x0f\x20\xc0\x66\x25\xfb\xff\x66\x0d\x02\x00\x0f\x22\xc0\x0f\x20\xe0\x66\x0d\x00\x06\x0f\x22\xe0\x5d\xc3";

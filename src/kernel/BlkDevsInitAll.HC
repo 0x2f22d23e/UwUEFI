@@ -1,4 +1,4 @@
-#define UEFI_DISK_OFFSET 0x10000000
+#define UEFI_DISK_OFFSET 0x10020000
 #define UEFI_DISK_SIZE 0x118c000 // Size of TempleOS.ISO and <1MB Runtime payload
 #define RAM_DISK_SIZE 0x4000000
 

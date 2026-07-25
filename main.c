@@ -5,7 +5,12 @@
 #include "patches/runtime.c"
 /* clang-format on */
 
+CUefi* u = (CUefi*)CORE0_32BIT_INIT;
+CFileData bootIni;
+CFileData bootEfi;
+
 CHAR16* IniFilePath = L"\\boot.ini";
+CHAR16* EfiFilePath = L"\\EFI\\BOOT\\BOOTX64.EFI";
 CHAR16* IsoFilePath = L"\\TempleOS.ISO";
 UINT64 MaxTotalMemory = 0;
 BOOLEAN SingleCore = FALSE;
@@ -46,8 +51,13 @@ UINT64 LoadFileAtAddress(EFI_FILE_HANDLE Root, CHAR16* FileName, UINT64 Address,
 void ParseIniFile(UINT64 FileSize)
 {
     if (FileSize == 0xFFFFFFFF) {
+        bootIni.ptr = 0;
+        bootIni.size = 0;
         return;
     }
+
+    bootIni.ptr = BOOT_INI_PTR;
+    bootIni.size = FileSize;
 
     CHAR8 key[256];
     CHAR8 value[256];
@@ -84,8 +94,12 @@ void LoadOperatingSystemFiles()
         &gEfiSimpleFileSystemProtocolGuid, (VOID**)&Fs);
     Fs->OpenVolume(Fs, &Root);
 
-    FileSize = LoadFileAtAddress(Root, IniFilePath, STD_ISO_PTR, FALSE);
+    FileSize = LoadFileAtAddress(Root, IniFilePath, BOOT_INI_PTR, FALSE);
     ParseIniFile(FileSize);
+
+    FileSize = LoadFileAtAddress(Root, EfiFilePath, BOOT_EFI_PTR, FALSE);
+    bootEfi.ptr = BOOT_EFI_PTR;
+    bootEfi.size = FileSize;
 
     FileSize = LoadFileAtAddress(Root, IsoFilePath, STD_ISO_PTR, TRUE);
     if (!SkipCrcCheck) {
@@ -125,11 +139,18 @@ void GopSetModeAndPopulateInfo()
     }
 
     Gop->SetMode(Gop, ModeIndex);
-    CUefi* u = (CUefi*)CORE0_32BIT_INIT;
     u->gop_fb_base = Gop->Mode->FrameBufferBase;
     u->gop_fb_size = Gop->Mode->FrameBufferSize;
     u->gop_fb_xres = Gop->Mode->Info->HorizontalResolution;
     u->gop_fb_yres = Gop->Mode->Info->VerticalResolution;
+}
+
+void SetBootFilesInfo()
+{
+    u->boot_ini_ptr = bootIni.ptr;
+    u->boot_ini_size = bootIni.size;
+    u->boot_efi_ptr = bootEfi.ptr;
+    u->boot_efi_size = bootEfi.size;
 }
 
 void InitMemMaps(UINT64 TotalMemory)
@@ -341,7 +362,7 @@ UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE* SystemTable)
     }
 
     GopSetModeAndPopulateInfo();
-    CUefi* u = (CUefi*)CORE0_32BIT_INIT;
+    SetBootFilesInfo();
     u->sys_tbl_ptr = (UINT64)SystemTable;
     u->total_mem = ActualTotalMemory;
 
