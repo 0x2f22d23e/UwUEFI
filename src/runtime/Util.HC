@@ -40,3 +40,24 @@ Bool IsKVM()
     CPUId(0x40000000, c);
     return c[1] == 'KVMK';
 }
+
+U0 RelocateBootFiles()
+{
+    CUefi* u = CORE0_32BIT_INIT;
+    U64 src, size;
+
+    src = u->boot_ini_ptr;
+    size = u->boot_ini_size;
+    if (src && size) {
+        u->boot_ini_ptr = MAlloc(size);
+        MemCpy(u->boot_ini_ptr, src, size);
+    }
+
+    src = u->boot_efi_ptr;
+    size = u->boot_efi_size;
+    if (src && size) {
+        u->boot_efi_ptr = MAlloc(size);
+        MemCpy(u->boot_efi_ptr, src, size);
+    }
+}
+RelocateBootFiles;
