@@ -110,6 +110,8 @@ typedef struct {
     UINT32 boot_efi_size;
     UINT64 boot_ini_ptr;
     UINT32 boot_ini_size;
+    BOOLEAN nvme_mount;
+    UINT32 nvme_offset;
 } __attribute__((packed)) CUefi;
 
 typedef struct {

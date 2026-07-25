@@ -13,6 +13,8 @@ CHAR16* IniFilePath = L"\\boot.ini";
 CHAR16* EfiFilePath = L"\\EFI\\BOOT\\BOOTX64.EFI";
 CHAR16* IsoFilePath = L"\\TempleOS.ISO";
 UINT64 MaxTotalMemory = 0;
+BOOLEAN NvmeMount = FALSE;
+UINT32 NvmeOffset = 0;
 BOOLEAN SingleCore = FALSE;
 BOOLEAN SkipCrcCheck = FALSE;
 
@@ -74,6 +76,14 @@ void ParseIniFile(UINT64 FileSize)
         if (!MEMCMP((UINT8*)&key, (UINT8*)"MaxTotalMemory", 9)) {
             if (ParseIniU64((CHAR8*)&value, (UINT64*)&u64)) {
                 MaxTotalMemory = (u64 >= 1024 && u64 <= 131072) ? (u64 * 0x100000) : 0;
+            }
+        };
+        if (!MEMCMP((UINT8*)&key, (UINT8*)"NvmeMount", 9)) {
+            NvmeMount = !MEMCMP((UINT8*)&value, (UINT8*)"on", 2);
+        }
+        if (!MEMCMP((UINT8*)&key, (UINT8*)"NvmeOffset", 9)) {
+            if (ParseIniU64((CHAR8*)&value, (UINT64*)&u64)) {
+                NvmeOffset = u64;
             }
         };
         // Print(L"Key: '%a', Value: '%a'\n", key, value);
@@ -151,6 +161,12 @@ void SetBootFilesInfo()
     u->boot_ini_size = bootIni.size;
     u->boot_efi_ptr = bootEfi.ptr;
     u->boot_efi_size = bootEfi.size;
+}
+
+void SetNvmeOptions()
+{
+    u->nvme_mount = NvmeMount;
+    u->nvme_offset = NvmeOffset;
 }
 
 void InitMemMaps(UINT64 TotalMemory)
@@ -365,6 +381,7 @@ UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE* SystemTable)
     SetBootFilesInfo();
     u->sys_tbl_ptr = (UINT64)SystemTable;
     u->total_mem = ActualTotalMemory;
+    SetNvmeOptions();
 
     ExitUefi(ImageHandle);
 

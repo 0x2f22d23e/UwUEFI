@@ -244,7 +244,6 @@ U0 NvmeBlkOp(U32 nsid, U64 lba, U64 buf, Bool is_write)
 
 I64 NvmeInit()
 {
-    MemSet(&nvme, 0, sizeof(@nvme));
     nvme.dev = PCIClassFind(0x010802, 0);
 
     if (nvme.dev == -1) {
@@ -276,3 +275,89 @@ I64 NvmeInit()
 nvme_init_end:
     return nvme.status;
 }
+
+// Patch over BDT_ATA and BDT_ATAPI
+
+Bool _ATARBlks(CDrv* dv, U8* buf, I64 blk, I64 cnt)
+{
+    I64 i;
+    for (i = 0; i < cnt; i++) {
+        NvmeBlkOp(nvme.nsid, blk + i, buf + (i * BLK_SIZE), 0);
+    }
+    return TRUE;
+}
+
+Bool _ATAWBlks(CDrv* dv, U8* buf, I64 blk, I64 cnt)
+{
+    I64 i;
+    for (i = 0; i < cnt; i++) {
+        NvmeBlkOp(nvme.nsid, blk + i, buf + (i * BLK_SIZE), 1);
+    }
+    return TRUE;
+}
+PatchJmpRel32(&ATARBlks, &_ATARBlks);
+PatchJmpRel32(&ATAWBlks, &_ATAWBlks);
+MemCpy(&ATAInit, "\x55\x48\x8b\xec\x33\xc0\xb0\x01\x5d\xc2\x08\x00", 0x0c);
+
+#define GiB 0x40000000
+#define BDT_NVME BDT_ATAPI
+StrCpy(DefineSub(BDT_NVME, "ST_BLKDEV_TYPES"), "NVME");
+
+I64 NvmeMount(I64 let = 'T', I64 p0_offset = -1, Bool init = FALSE)
+{
+    CUefi* u = CORE0_32BIT_INIT;
+    if (u->nvme_mount && p0_offset == -1) {
+        p0_offset = u->nvme_offset;
+    }
+
+    if (p0_offset == -1) {
+        return FALSE;
+    }
+
+    I64 type = BDT_NVME;
+    U8 buf[512];
+
+    if (!nvme.nsid) {
+        NvmeInit;
+    }
+    if (nvme.status) {
+        return FALSE;
+    }
+
+    CDrv* dv = DrvMakeFreeSlot(let);
+    CBlkDev* bd = BlkDevNextFreeSlot(dv->drv_let, type);
+    bd->max_blk = (MinI64(nvme.capacity, GiB << 2) / BLK_SIZE) - 1;
+
+    BlkDevAdd(bd, , FALSE, FALSE);
+
+    dv->drv_offset = p0_offset;
+    dv->size = GiB / BLK_SIZE;
+
+    dv->fat2 = dv->fat1 = dv->drv_offset + 0x01;
+
+    if (init) {
+        dv->data_area = dv->drv_offset + 0x100;
+        dv->root_clus = dv->data_area + 0x01;
+    } else {
+        NvmeBlkOp(1, dv->drv_offset, buf, 0);
+        if (buf[3] != MBR_PT_REDSEA) {
+            BlkDevDel(bd);
+            return FALSE;
+        }
+        dv->data_area = (&buf)(U64*)[1];
+        dv->root_clus = (&buf)(U64*)[3];
+    }
+
+    bd->flags &= ~BDF_READ_ONLY;
+    bd->flags &= ~BDF_READ_CACHE;
+    dv->fs_type = FSt_REDSEA;
+
+    if (init) {
+        CallExtStr("RedSeaFmt", let, 1);
+        DirMk("T:/Home");
+    }
+    return TRUE;
+}
+
+MemSet(&nvme, 0, sizeof(@nvme));
+NvmeMount;
