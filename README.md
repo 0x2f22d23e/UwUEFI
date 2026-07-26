@@ -6,7 +6,9 @@ A 萌え萌えキュン UEFI bootloader for TempleOS
 
 ### INFO
 
-The entire bootloader is about ⅕ of the Kernel size, and provides all necessary steps to: load the TempleOS Standard ISO into a RAM disk, extract the Kernel to `BOOT_RAM_BASE` and live-patch minimal required functions to boot the system.
+The entire bootloader is about ⅕ of the Kernel size, and provides all necessary steps to: load the TempleOS Standard ISO into a RAM disk, extract the Kernel to `BOOT_RAM_BASE` and live-patch minimal required functions to boot the system. 
+
+There is *experimental* support for NVMe devices, to allow persistent storage.
 
 ### HOWTO
 
@@ -39,6 +41,16 @@ You can put a `boot.ini` in `/` on your filesystem to set boot time options. Use
 `MaxTotalMemory=size` to specify total memory limit in MiB
 
 `MultiCore=off` to disable MultiCore start
+
+###### NVME RELATED OPTIONS
+
+`NvmeMount=on` to auto-mount an existing RedSea partition on the NVMe device as `T:`
+
+`NvmeOffset=0000` to specify the decimal offset of the block where the RedSea partition begins on the NVMe device.
+
+**NOTE:** `NvmeMount` expects a 1 GiB partition at the offset specified by `NvmeOffset`.
+
+If a RedSea filesystem does not exist on the partition, you can create one with `NvmeMount(,,1);`
 
 ### TROUBLESHOOTING
 
