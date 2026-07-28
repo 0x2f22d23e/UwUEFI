@@ -80,3 +80,14 @@ U0 RelocateBootFiles()
     }
 }
 RelocateBootFiles;
+
+U0 LPutS(U16* name, Bool no_break = FALSE)
+{
+    I64 ch;
+    while (ch = *name++) {
+        "%c", ch;
+    }
+    if (!no_break) {
+        "\n";
+    }
+}
