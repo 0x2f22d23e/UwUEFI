@@ -29,6 +29,9 @@ class CGptHeader {
 
 U0 GptType(U8* guid)
 {
+    if (!StrCmp(guid, "706d6554-656c-534f-2052-656453656100")) {
+        return "TempleOS RedSea";
+    }
     if (!StrCmp(guid, "c12a7328-f81f-11d2-ba4b-00a0c93ec93b")) {
         return "EFI System";
     }
