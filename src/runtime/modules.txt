@@ -1,4 +1,5 @@
 Util.HC
 Gop.HC
 Pci.HC
+Gpt.HC
 Nvme.HC
