@@ -12,11 +12,12 @@ CFileData bootEfi;
 CHAR16* IniFilePath = L"\\boot.ini";
 CHAR16* EfiFilePath = L"\\EFI\\BOOT\\BOOTX64.EFI";
 CHAR16* IsoFilePath = L"\\TempleOS.ISO";
+
+BOOLEAN CrcCheck = TRUE;
 UINT64 MaxTotalMemory = 0;
-BOOLEAN NvmeMount = FALSE;
-UINT32 NvmeOffset = 0;
+BOOLEAN NvmeAutoMount = FALSE;
+UINT8 NvmePartition = 0;
 BOOLEAN SingleCore = FALSE;
-BOOLEAN SkipCrcCheck = FALSE;
 
 EFI_STATUS ExitUefi(EFI_HANDLE ImageHandle)
 {
@@ -67,6 +68,9 @@ void ParseIniFile(UINT64 FileSize)
     UINT64 u64 = 0;
 
     while (ParseIniKeyValue(BOOT_INI_PTR, FileSize, (UINT8*)&key, (UINT8*)&value, &i)) {
+        if (!MEMCMP((UINT8*)&key, (UINT8*)"CrcCheck", 8)) {
+            CrcCheck = !!MEMCMP((UINT8*)&value, (UINT8*)"off", 3);
+        }
         if (!MEMCMP((UINT8*)&key, (UINT8*)"IsoFilePath", 11)) {
             IsoFilePath = CatSPrint(NULL, L"%a", (CHAR8*)&value);
         }
@@ -78,12 +82,12 @@ void ParseIniFile(UINT64 FileSize)
                 MaxTotalMemory = (u64 >= 1024 && u64 <= 131072) ? (u64 * 0x100000) : 0;
             }
         };
-        if (!MEMCMP((UINT8*)&key, (UINT8*)"NvmeMount", 9)) {
-            NvmeMount = !MEMCMP((UINT8*)&value, (UINT8*)"on", 2);
+        if (!MEMCMP((UINT8*)&key, (UINT8*)"NvmeAutoMount", 13)) {
+            NvmeAutoMount = !MEMCMP((UINT8*)&value, (UINT8*)"on", 2);
         }
-        if (!MEMCMP((UINT8*)&key, (UINT8*)"NvmeOffset", 9)) {
+        if (!MEMCMP((UINT8*)&key, (UINT8*)"NvmePartition", 13)) {
             if (ParseIniU64((CHAR8*)&value, (UINT64*)&u64)) {
-                NvmeOffset = u64;
+                NvmePartition = u64;
             }
         };
         // Print(L"Key: '%a', Value: '%a'\n", key, value);
@@ -112,7 +116,7 @@ void LoadOperatingSystemFiles()
     bootEfi.size = FileSize;
 
     FileSize = LoadFileAtAddress(Root, IsoFilePath, STD_ISO_PTR, TRUE);
-    if (!SkipCrcCheck) {
+    if (CrcCheck) {
         Crc32 = CalculateCrc32((VOID*)STD_ISO_PTR, FileSize);
         if (Crc32 != STD_ISO_CRC32) {
             Print(L"ERROR: Crc32 does not match TempleOS Standard ISO: Good=0x%04x, Bad=0x%04x\r\n", STD_ISO_CRC32, Crc32);
@@ -165,8 +169,8 @@ void SetBootFilesInfo()
 
 void SetNvmeOptions()
 {
-    u->nvme_mount = NvmeMount;
-    u->nvme_offset = NvmeOffset;
+    u->nvme_automount = NvmeAutoMount;
+    u->nvme_partition = NvmePartition;
 }
 
 void InitMemMaps(UINT64 TotalMemory)
