@@ -9,8 +9,8 @@ class CUefi {
     U32 boot_efi_size;
     U64 boot_ini_ptr;
     U32 boot_ini_size;
-    U8 nvme_mount;
-    U32 nvme_offset;
+    U8 nvme_automount;
+    U8 nvme_partition;
 };
 
 U0 (*SseOn)() = "\x55\x48\x8b\xec\x0f\x20\xc0\x66\x25\xfb\xff\x66\x0d\x02\x00\x0f\x22\xc0\x0f\x20\xe0\x66\x0d\x00\x06\x0f\x22\xe0\x5d\xc3";
@@ -41,6 +41,23 @@ Bool IsKVM()
     U64 c[4];
     CPUId(0x40000000, c);
     return c[1] == 'KVMK';
+}
+
+U32 Crc32(U8* data, I64 len)
+{
+    U32 crc = U32_MAX;
+    I64 i, j;
+    for (i = 0; i < len; i++) {
+        crc ^= data[i];
+        for (j = 0; j < 8; j++) {
+            if (crc & 1) {
+                crc = (crc >> 1) ^ 0xedb88320;
+            } else {
+                crc >>= 1;
+            }
+        }
+    }
+    return crc ^ U32_MAX;
 }
 
 U0 RelocateBootFiles()
