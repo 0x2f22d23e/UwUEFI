@@ -6,7 +6,7 @@ A 萌え萌えキュン UEFI bootloader for TempleOS
 
 ### INFO
 
-The entire bootloader is about ⅕ of the Kernel size, and provides all necessary steps to: load the TempleOS Standard ISO into a RAM disk, extract the Kernel to `BOOT_RAM_BASE` and live-patch minimal required functions to boot the system. 
+The entire bootloader is about ¼ of the Kernel size, and provides all necessary steps to: load the TempleOS Standard ISO into a RAM disk, extract the Kernel to `BOOT_RAM_BASE` and live-patch minimal required functions to boot the system.
 
 There is *experimental* support for NVMe devices, to allow persistent storage.
 
