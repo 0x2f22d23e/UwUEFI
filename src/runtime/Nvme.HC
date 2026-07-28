@@ -602,6 +602,11 @@ U0 NvmeInstall()
 
 U0 NvmeAutoMount()
 {
+    KbdMsHndlr(0, 0);
+    if (Bt(kbd.down_bitmap, SC_F8)) {
+        return;
+    }
+
     if (!NvmeChk) {
         return;
     }
