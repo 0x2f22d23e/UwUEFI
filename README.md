@@ -36,6 +36,8 @@ After initial build, set `build.coalesced = True` in `scripts/build-all` and re-
 
 You can put a `boot.ini` in `/` on your filesystem to set boot time options. Use `key=value` format.
 
+`CrcCheck=off` to skip verifying CRC32 value of TempleOS.ISO
+
 `IsoFilePath=path` to specify a full path to TempleOS.ISO
 
 `MaxTotalMemory=size` to specify total memory limit in MiB
@@ -44,13 +46,13 @@ You can put a `boot.ini` in `/` on your filesystem to set boot time options. Use
 
 ###### NVME RELATED OPTIONS
 
-`NvmeMount=on` to auto-mount an existing RedSea partition on the NVMe device as `T:`
+`NvmeAutoMount=on` to auto-mount an existing RedSea filesystem on the NVMe device. The device will mount as `T:` and the home folder will be set to `T:/Home`.
 
-`NvmeOffset=0000` to specify the decimal offset of the block where the RedSea partition begins on the NVMe device.
+`NvmePartition=#` to specify the GPT partition number (default=2) of the RedSea filesystem to auto-mount.
 
-**NOTE:** `NvmeMount` expects a 1 GiB partition at the offset specified by `NvmeOffset`.
+You can run `NvmeInstall;` to wipe and auto-partition the NVMe device with a 64MB EFI partition containing the bootloader and TempleOS.ISO, and a 1GB writable RedSea partition.
 
-If a RedSea filesystem does not exist on the partition, you can create one with `NvmeMount(,,1);`
+Optionally, perform a manual install on an existing partition with `NvmeMount('T', partition_num, TRUE);` and `CopyTree("A:/", "T:/");`
 
 ### TROUBLESHOOTING
 
