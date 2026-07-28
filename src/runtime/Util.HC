@@ -60,6 +60,19 @@ U32 Crc32(U8* data, I64 len)
     return crc ^ U32_MAX;
 }
 
+U0 RamDisk(I64 let, I64 size, I64 type)
+{
+    CDrv* dv = DrvMakeFreeSlot(DrvNextFreeLet(let));
+    CBlkDev* bd = BlkDevNextFreeSlot(dv->drv_let, BDT_RAM);
+    bd->max_blk = (size / BLK_SIZE) - 1;
+    BlkDevAdd(bd, , FALSE, FALSE);
+    if (type == FSt_FAT32) {
+        CallExtStr("FAT32Fmt", let, 1);
+    } else {
+        CallExtStr("RedSeaFmt", let, 1);
+    }
+}
+
 U0 RelocateBootFiles()
 {
     CUefi* u = CORE0_32BIT_INIT;
