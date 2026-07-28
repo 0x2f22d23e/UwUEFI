@@ -170,9 +170,9 @@ def build_disk_image():
                 f"mformat -i {build.disk_image}@@1M -F -N 1 ::",
                 f"mmd -i {build.disk_image}@@1M ::/EFI",
                 f"mmd -i {build.disk_image}@@1M ::/EFI/BOOT",
+                f"mcopy -i {build.disk_image}@@1M {build.project_path}boot.ini ::/boot.ini || true",
                 f"mcopy -i {build.disk_image}@@1M {build.project_path}build/BOOTX64.EFI ::/EFI/BOOT/BOOTX64.EFI",
                 f"mcopy -i {build.disk_image}@@1M {build.project_path}iso/TempleOS.ISO ::/TempleOS.ISO",
-                f"mcopy -i {build.disk_image}@@1M {build.project_path}boot.ini ::/boot.ini || true",
             ]
         )
     )
