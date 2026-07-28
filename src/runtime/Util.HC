@@ -68,7 +68,7 @@ U0 RelocateBootFiles()
     src = u->boot_ini_ptr;
     size = u->boot_ini_size;
     if (src && size) {
-        u->boot_ini_ptr = MAlloc(size);
+        u->boot_ini_ptr = CAlloc(size + 1024);
         MemCpy(u->boot_ini_ptr, src, size);
     }
 
