@@ -1,14 +1,34 @@
-U32 gop_palette_std[COLORS_NUM] = {
+U32 gop_palette[COLORS_NUM] = {
     0xFF000000, 0xFF0000AA, 0xFF00AA00, 0xFF00AAAA, 0xFFAA0000, 0xFFAA00AA, 0xFFAA5500, 0xFFAAAAAA,
     0xFF555555, 0xFF5555FF, 0xFF55FF55, 0xFF55FFFF, 0xFFFF5555, 0xFFFF55FF, 0xFFFFFF55, 0xFFFFFFFF
 };
+
+CBGR48 _GrPaletteColorGet(I64 i)
+{
+    CBGR48 bgr = 0;
+    U32 c = gop_palette[i];
+    bgr.b = c.u8[0] << 8;
+    bgr.g = c.u8[1] << 8;
+    bgr.r = c.u8[2] << 8;
+    return bgr;
+}
+
+U0 _GrPaletteColorSet(I64 i, CBGR48 bgr)
+{
+    U32 c;
+    c.u8[0] = bgr.b >> 8;
+    c.u8[1] = bgr.g >> 8;
+    c.u8[2] = bgr.r >> 8;
+    c.u8[3] = 0xff;
+    gop_palette[i] = c;
+}
 
 U0 GrUpdateGopGraphics()
 {
     U64* u = CORE0_32BIT_INIT;
     U64 reg RDI dst = u[0];
     U64 reg RSI src = gr.dc2->body;
-    U64 reg RDX lut = &gop_palette_std;
+    U64 reg RDX lut = &gop_palette;
     no_warn dst, src, lut;
     asm {
         DU32 0x048bc931, 0x0c44888a, 0x0c6488c0, 0x10e8c1d0, 0xe00c4488, 0xf00c6488, 0xf983c1ff, 0xf3e37c10,
@@ -19,4 +39,6 @@ U0 GrUpdateGopGraphics()
         0x1047e70f, 0x57e70f66, 0xe70f6620, 0x8348304f, 0x834810c6, 0xff4840c7, 0x0f8175c9, 0x9090f8ae;
     }
 }
+PatchJmpRel32(&GrPaletteColorGet, &_GrPaletteColorGet);
+PatchJmpRel32(&GrPaletteColorSet, &_GrPaletteColorSet);
 PatchJmpRel32(&GrUpdateVGAGraphics, &GrUpdateGopGraphics);
