@@ -2,7 +2,7 @@
 
 A 萌え萌えキュン UEFI bootloader for TempleOS
 
-![TempleOS running on a UEFI system with no BIOS](https://codeberg.org/0x2f22d23e/UwUEFI/raw/branch/main/screenshot.png)
+![TempleOS running on a UEFI system with no BIOS](https://git.checksum.fail/alec/UwUEFI/raw/branch/main/screenshot.png)
 
 ### INFO
 
@@ -12,7 +12,7 @@ There is *experimental* support for NVMe devices, to allow persistent storage.
 
 ### HOWTO
 
-You can grab pre-built files from [Releases](https://codeberg.org/0x2f22d23e/UwUEFI/releases), or build them yourself using the instructions below.
+You can grab pre-built files from [Releases](https://git.checksum.fail/alec/UwUEFI/releases), or build them yourself using the instructions below.
 
 You can write the disk image to a flash drive with `dd if=build/disk.img of=/dev/sdX bs=64M status=progress && sync`,
 
@@ -28,7 +28,7 @@ You will need to modify `build.edk2_path` in `scripts/build-all` to specify the 
 
 ### (Optional: Coalesce the Kernel patches)
 
-This can result in a *slightly* smaller file size for `build/BOOTX64.EFI`. This build option is used for [releases](https://codeberg.org/0x2f22d23e/UwUEFI/releases).
+This can result in a *slightly* smaller file size for `build/BOOTX64.EFI`. This build option is used for [releases](https://git.checksum.fail/alec/UwUEFI/releases).
 
 After initial build, set `build.coalesced = True` in `scripts/build-all` and re-run the build.
 
