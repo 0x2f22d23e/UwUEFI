@@ -112,7 +112,9 @@ def generate_runtime_patch():
             [
                 f"rm -f {build.project_path}{runtime_c}",
                 f"mkdir {tmp_path}",
-                f"sed 's/^/src\\/runtime\\//' src/runtime/modules.txt | xargs cat > {tmp_path}Runtime.HC",
+                f"printf \"Silent(1);\n\" > {tmp_path}Runtime.HC" if build.silence_runtime_warnings else f"touch {tmp_path}Runtime.HC",
+                f"sed 's/^/src\\/runtime\\//' src/runtime/modules.txt | xargs cat >> {tmp_path}Runtime.HC",
+                f"printf \"Silent(0);\n\" >> {tmp_path}Runtime.HC" if build.silence_runtime_warnings else f"true",
                 f"{build.tools_path}todotz.bin {tmp_path}Runtime.HC",
                 f"cat src/runtime/prologue.c > {runtime_c}",
                 f"xxd -n Runtime_HC_Z -i {tmp_path}Runtime.HC.Z >> {runtime_c}",
@@ -189,6 +191,7 @@ def run():
 def build_all():
     build.debug = False
     build.coalesced = False
+    build.silence_runtime_warnings = True
     init_values()
     kill_running_qemu_processes()
     kill_running_gdb_processes()
