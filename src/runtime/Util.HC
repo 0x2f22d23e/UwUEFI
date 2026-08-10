@@ -36,6 +36,11 @@ U0 PatchJmpRel32(U32 from, U32 to)
     *((from + 1)(I32*)) = to - from - 5;
 }
 
+U0 PatchNop(U32 addr)
+{
+    *(addr(U8*)) = 0x90;
+}
+
 Bool IsKVM()
 {
     U64 c[4];

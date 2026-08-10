@@ -3,6 +3,7 @@
 #include "ini.c"
 #include "patches/build_type.c"
 #include "patches/runtime.c"
+#include "patches/legacy.c"
 /* clang-format on */
 
 CUefi* u = (CUefi*)CORE0_32BIT_INIT;
@@ -13,6 +14,7 @@ CHAR16* IniFilePath = L"\\boot.ini";
 CHAR16* EfiFilePath = L"\\EFI\\BOOT\\BOOTX64.EFI";
 CHAR16* IsoFilePath = L"\\TempleOS.ISO";
 
+BOOLEAN LegacyKbdMs = TRUE;
 BOOLEAN CrcCheck = TRUE;
 UINT64 MaxTotalMemory = 0;
 BOOLEAN NvmeAutoMount = FALSE;
@@ -68,6 +70,9 @@ void ParseIniFile(UINT64 FileSize)
     UINT64 u64 = 0;
 
     while (ParseIniKeyValue(BOOT_INI_PTR, FileSize, (UINT8*)&key, (UINT8*)&value, &i)) {
+        if (!MEMCMP((UINT8*)&key, (UINT8*)"LegacyKbdMs", 11)) {
+            LegacyKbdMs = !!MEMCMP((UINT8*)&value, (UINT8*)"off", 3);
+        }
         if (!MEMCMP((UINT8*)&key, (UINT8*)"CrcCheck", 8)) {
             CrcCheck = !!MEMCMP((UINT8*)&value, (UINT8*)"off", 3);
         }
@@ -374,6 +379,11 @@ UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE* SystemTable)
     UINT64 ActualTotalMemory = GetTotalMemory();
     LoadOperatingSystemFiles();
     DoKernelPatch();
+
+    if (!LegacyKbdMs) {
+        DoLegacyKbdMsPatch();
+    }
+
     DoRuntimePatches();
 
     UINT64 TotalMemory = MaxTotalMemory ? (MaxTotalMemory < ActualTotalMemory ? MaxTotalMemory : ActualTotalMemory) : ActualTotalMemory;

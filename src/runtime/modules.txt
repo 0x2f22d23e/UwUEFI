@@ -4,3 +4,8 @@ Pci.HC
 Gpt.HC
 Nvme.HC
 Efi.HC
+Usb/Class.HC
+Usb/Xhci.HC
+Usb/Device/Keyboard.HC
+Usb/Device/Mouse.HC
+Usb/Driver.HC
