@@ -23,11 +23,10 @@ U0 _GrPaletteColorSet(I64 i, CBGR48 bgr)
     gop_palette[i] = c;
 }
 
-U0 GrUpdateGopGraphics()
+U0 GrUpdateGopGraphics2(U64 reg RSI src)
 {
     U64* u = CORE0_32BIT_INIT;
     U64 reg RDI dst = u[0];
-    U64 reg RSI src = gr.dc2->body;
     U64 reg RDX lut = &gop_palette;
     no_warn dst, src, lut;
     asm {
@@ -37,6 +36,38 @@ U0 GrUpdateGopGraphics()
         0x380f4466, 0x0f66c000, 0x0f66c16f, 0x0f66c260, 0x0f66ca68, 0x4166d36f, 0x66d0600f, 0xd8680f41,
         0x6f0f4466, 0x0f4466c0, 0x0f66c261, 0x0f66c269, 0x0f66d16f, 0x0f66d361, 0x4466cb69, 0x6607e70f,
         0x1047e70f, 0x57e70f66, 0xe70f6620, 0x8348304f, 0x834810c6, 0xff4840c7, 0x0f8175c9, 0x9090f8ae;
+    }
+}
+
+gr.zoomed_dc = DCNew(GR_WIDTH, GR_HEIGHT);
+
+U0 GrZoomInScrn2()
+{
+    GrFixZoomScale;
+    I64 ox, oy;
+    I64 zx, zy;
+    I64 zoom = gr.scrn_zoom;
+    U8* p = gr.dc2->body;
+    CDC* dc = gr.zoomed_dc;
+    oy = gr.sy;
+    for (zy = 0; zy < GR_HEIGHT; zy += zoom) {
+        ox = gr.sx;
+        for (zx = 0; zx < GR_WIDTH; zx += zoom) {
+            dc->color = p[(oy * GR_WIDTH) + ox];
+            GrRect(dc, zx, zy, zoom, zoom);
+            ox++;
+        }
+        oy++;
+    }
+}
+
+U0 GrUpdateGopGraphics()
+{
+    if (gr.scrn_zoom == 1) {
+        GrUpdateGopGraphics2(gr.dc2->body);
+    } else {
+        GrZoomInScrn2;
+        GrUpdateGopGraphics2(gr.zoomed_dc->body);
     }
 }
 PatchJmpRel32(&GrPaletteColorGet, &_GrPaletteColorGet);
