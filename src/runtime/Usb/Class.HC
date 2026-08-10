@@ -37,6 +37,8 @@
 #define XHCI_PCI usb.d.u8[2], usb.d.u8[1], usb.d.u8[0]
 #define XHCI_WAIT_INTERVAL 8000000
 
+#define USB_STR 128
+
 U64 CALLOC_64(I64 size)
 {
     return CAllocAligned(size, 64, adam_task->code_heap);
@@ -115,8 +117,8 @@ class CUsbDevice {
     CUsbDeviceDesc desc;
     CUsbInterfaceDesc iface;
     U16 lang_id;
-    U8 mfr[128];
-    U8 prod[128];
+    U8 mfr[USB_STR];
+    U8 prod[USB_STR];
 };
 
 class CUsbKeyboard : CUsbDevice {

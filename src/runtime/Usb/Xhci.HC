@@ -68,7 +68,7 @@ I32 XhciResetPort(I32 p)
 
     U32 i;
     MMIO_WRITE_U32(addr, (portsc & PORTSC_PP) | (1 << 4));
-    for (i = 0; i < 250; i++) {
+    for (i = 0; i < 100; i++) {
         portsc = MMIO_READ_U32(addr);
         if (portsc & (1 << 21))
             break;
@@ -199,13 +199,20 @@ U32 XhciGetStringDescriptor(CUsbDevice* d, U16 index, U32 want_len)
 
 U0 XhciGetWideString(CUsbDevice* d, U8* buf)
 {
-    MemSet(buf, 0, 128);
-    if (!d->ctrl_buf[0]) {
+    MemSet(buf, 0, USB_STR);
+    I64 total = d->ctrl_buf[0];
+    if (!total) {
         return;
     }
-    I64 n = 2;
-    while (*buf++ = d->ctrl_buf[n]) {
+    I64 ch;
+    I64 n = 0;
+    while (total) {
         n += 2;
+        total -= 2;
+        ch = d->ctrl_buf[n];
+        if (ch >= ' ') {
+            *buf++ = ch;
+        }
     }
     *buf = 0;
 }
@@ -437,6 +444,13 @@ CUsbMouse* XhciConfigMouse(CUsbDevice* d)
     return m;
 }
 
+CUsbDevice* XhciConfigGeneric(CUsbDevice* d)
+{
+    CUsbDevice* g = CAlloc(sizeof(CUsbDevice), adam_task->code_heap);
+    MemCpy(g, d, sizeof(CUsbDevice));
+    return g;
+}
+
 CUsbDevice* XhciProbePort(I32 p)
 {
     U32 portsc, pls, speed_id, max_packet;
@@ -540,7 +554,7 @@ CUsbDevice* XhciProbePort(I32 p)
         if (cc == 1 || cc == 13) {
             U32 real_mp = d.ctrl_buf[7];
             if (real_mp != 0 && real_mp != max_packet) {
-                if (XhciEvaluateEp0MaxPacket(d, real_mp))
+                if (XhciEvaluateEp0MaxPacket(&d, real_mp))
                     max_packet = real_mp;
             }
         }
@@ -565,10 +579,14 @@ CUsbDevice* XhciProbePort(I32 p)
         cc = XhciGetStringDescriptor(&d, d.desc.iManufacturer, 256);
         if (cc == 1) {
             XhciGetWideString(&d, &d.mfr);
+        } else {
+            StrCpy(&d.mfr, "");
         }
         cc = XhciGetStringDescriptor(&d, d.desc.iProduct, 256);
         if (cc == 1) {
             XhciGetWideString(&d, &d.prod);
+        } else {
+            StrCpy(&d.prod, "");
         }
         // AdamLog("XhciProbePort: port %d %s %s\n", p, d.mfr, d.prod);
     } else {
@@ -585,12 +603,11 @@ CUsbDevice* XhciProbePort(I32 p)
                 return XhciConfigKeyboard(&d);
             case 0x02:
                 return XhciConfigMouse(&d);
-                break;
             default:
-                // AdamLog("XhciProbePort: ERR unsupported_device, port %d\n", p);
                 break;
             }
         }
+        return XhciConfigGeneric(&d);
     } else {
         // AdamLog("XhciProbePort: ERR 0010, port %d\n", p);
     }
