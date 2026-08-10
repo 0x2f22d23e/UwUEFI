@@ -6,9 +6,9 @@ A 萌え萌えキュン UEFI bootloader for TempleOS
 
 ### INFO
 
-The bootloader is about ¼ of the Kernel size, and provides the necessary steps to: load the TempleOS Standard ISO into a RAM disk, extract the Kernel to `BOOT_RAM_BASE`, and live-patch minimal required functions to boot the system.
+The bootloader is about ⅓ of the Kernel size, and provides the necessary steps to: load the TempleOS Standard ISO into a RAM disk, extract the Kernel to `BOOT_RAM_BASE`, and live-patch minimal required functions to boot the system.
 
-There is *experimental* support for NVMe devices, to allow persistent storage.
+There is *experimental* support for: NVMe devices, to allow persistent storage; and USB keyboard/mouse.
 
 ### HOWTO
 
@@ -37,6 +37,8 @@ You can put a `boot.ini` in `/` on your filesystem to set boot time options. Use
 `CrcCheck=off` to skip verifying CRC32 value of `TempleOS.ISO`.
 
 `IsoFilePath=path` to specify a full path to `TempleOS.ISO`.
+
+`LegacyKbdMs=off` to disable legacy keyboard mouse initialization routines which cause freezing on some systems (Microsoft Surface 3).
 
 `MaxTotalMemory=size` to specify total memory limit in MiB.
 
