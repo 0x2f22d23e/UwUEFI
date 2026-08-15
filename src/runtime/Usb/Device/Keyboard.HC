@@ -139,13 +139,15 @@ U0 UsbKbdUpdate()
 
 U0 _KbdMsHndlr()
 {
-    U8* report = usb.kb->report;
-    if (MemCmp(&usb.kb->last_report, report, 8)) {
-        UsbKbdUpdate;
-    } else {
-        UsbKbdTypematic;
+    if (usb.kb) {
+        U8* report = usb.kb->report;
+        if (MemCmp(&usb.kb->last_report, report, 8)) {
+            UsbKbdUpdate;
+        } else {
+            UsbKbdTypematic;
+        }
+        MemCpy(&usb.kb->last_report, report, 8);
     }
-    MemCpy(&usb.kb->last_report, report, 8);
 
     while (FifoU8Cnt(kbd.fifo2)) {
         _KbdHndlr();

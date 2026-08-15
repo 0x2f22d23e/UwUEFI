@@ -25,12 +25,9 @@
 
 #define CMD_RING_TRBS 32
 #define EVT_RING_TRBS 32
+#define EPx_RING_TRBS 8
 
-#define EP0_RING_TRBS 8
-#define KBD_RING_TRBS 8
-#define MS_RING_TRBS 8
-
-#define MAX_SLOTS_WANT 8
+#define MAX_SLOTS_WANT 32
 #define MAX_SCRATCHPAD 32
 
 #define QEMU_XHCI_BAR0 0xd0000000
@@ -38,6 +35,12 @@
 #define XHCI_WAIT_INTERVAL 8000000
 
 #define USB_STR 128
+#define HUB_MAX_PORTS 32
+
+#define USB_TYPE_DEFAULT 0
+#define USB_TYPE_KEYBOARD 1
+#define USB_TYPE_MOUSE 2
+#define USB_TYPE_HUB 3
 
 U64 CALLOC_64(I64 size)
 {
@@ -107,7 +110,25 @@ class CUsbInterfaceDesc {
     U8 iInterface;
 };
 
+class CUsbHubDesc {
+    U8 bLength;
+    U8 bDescriptorType;
+    U8 bNumPorts;
+    U16 wHubCharacteristics;
+};
+
+U32 SLOT_2_TT_TIME(U32 x)
+{
+    return (((x) & 0x3) << 16);
+}
+
+U32 HUB_TTT_GET(U32 x)
+{
+    return (((x) >> 5) & 0x3);
+}
+
 class CUsbDevice {
+    U8 type;
     U32 port;
     U32 slot_id;
     CXhciRing ep0;
@@ -122,7 +143,7 @@ class CUsbDevice {
 };
 
 class CUsbKeyboard : CUsbDevice {
-    CXhciRing kbd;
+    CXhciRing kb;
     U8* report;
     U8 last_report[8];
     I64 next_repeat;
@@ -134,6 +155,17 @@ class CUsbMouse : CUsbDevice {
     U8* report;
     U8 last_report[8];
     I64 timestamp;
+};
+
+class CUsbHub : CUsbDevice {
+    CXhciRing hub;
+    CUsbHubDesc hdesc;
+    U8* report;
+    U8 last_report[8];
+    I64 timestamp;
+    Bool enabled;
+    CUsbDevice* dev[HUB_MAX_PORTS];
+    U8 ccs_state[HUB_MAX_PORTS];
 };
 
 class CUsb {
@@ -152,9 +184,9 @@ class CUsb {
     U64* dcbaa;
     U64* scratch_ptrs;
     U8* scratch_buf;
-    U8 ccs_state[64];
     Bool running;
     CUsbKeyboard* kb;
     CUsbMouse* ms;
-    CUsbDevice* dev[32];
+    CUsbHub* root;
+    Bool debug;
 } usb;
