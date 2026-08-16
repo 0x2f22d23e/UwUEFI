@@ -7,8 +7,11 @@ void ApplyBaselinePatch()
 }
 
 #define pBlkDevsInitAll 0x275eb
+#define pDevGlbl 0xbe28
 #define pDrvIsWritable 0x259e2
 #define pFileWrite 0x2e0e0
+#define pIntWake 0xfa09
+#define pIrqTimer 0xfa24
 #define pPCIReadU16 0x1f3f1
 #define pPCIReadU32 0x1f491
 #define pPutS 0x18cf6
@@ -178,6 +181,16 @@ void TempPatchFileWrite()
     COPY_PAYLOAD
 }
 
+void PatchIntWake()
+{
+    *(UINT16*)(pIntWake + 0x0003) = pDevGlbl;
+}
+
+void PatchIrqTimer()
+{
+    *(UINT16*)(pIrqTimer + 0x005e) = pDevGlbl;
+}
+
 void DoKernelPatch()
 {
     ApplyBaselinePatch();
@@ -187,5 +200,7 @@ void DoKernelPatch()
     PatchPCIReadU32();
     PatchRawPutChar();
     PatchDrvIsWritable();
+    PatchIntWake();
+    PatchIrqTimer();
     // TempPatchFileWrite();
 }
