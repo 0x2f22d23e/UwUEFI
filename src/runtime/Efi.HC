@@ -22,6 +22,7 @@ class @gST
     U64 hdr[3];
     U16* vendor_str;
     U32 rev;
+    U32 pad;
     U64 con[6];
     U64 runtime_svcs;
     U64 boot_svcs;
@@ -40,7 +41,7 @@ U0 EfiReboot()
 {
     CUefi* u = CORE0_32BIT_INIT;
     @gST* gST = u->sys_tbl_ptr;
-    @gRT* gRT = gST->runtime_svcs.u32[1];
+    @gRT* gRT = gST->runtime_svcs;
     EfiCall(gRT->ResetSystem, 1, 0, 0, 0);
 }
 
@@ -48,7 +49,7 @@ U0 EfiShutdown()
 {
     CUefi* u = CORE0_32BIT_INIT;
     @gST* gST = u->sys_tbl_ptr;
-    @gRT* gRT = gST->runtime_svcs.u32[1];
+    @gRT* gRT = gST->runtime_svcs;
     EfiCall(gRT->ResetSystem, 2, 0, 0, 0);
 }
 
