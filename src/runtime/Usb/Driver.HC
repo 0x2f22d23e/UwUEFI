@@ -68,7 +68,7 @@ U0 UsbSetupDevice(CUsbDevice* d)
         d->type = USB_TYPE_MOUSE;
         MemSet(usb.ms->report, 0, 8);
         MsUpdate(GR_WIDTH / 2, GR_HEIGHT / 2, 0, 0, 0);
-        PatchJmpRel32(&WinMsUpdate, &_WinMsUpdate);
+        PatchJmpRel32(&WinMsUpdate, &_UsbWinMsUpdate);
         ms_hard.installed = TRUE;
         ms.has_wheel = TRUE;
         usb.ms = d;

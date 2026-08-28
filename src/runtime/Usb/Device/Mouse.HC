@@ -1,4 +1,4 @@
-U0 _WinMsUpdate()
+U0 _UsbWinMsUpdate()
 {
     if (usb.ms) {
         if (MemCmp(&usb.ms->last_report, usb.ms->report, 4)) {
