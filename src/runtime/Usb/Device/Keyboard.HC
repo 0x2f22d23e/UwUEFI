@@ -146,6 +146,7 @@ U0 _KbdMsHndlr()
         } else {
             UsbKbdTypematic;
         }
+        kbd.new_key_timestamp = GetTSC;
         MemCpy(&usb.kb->last_report, report, 8);
     }
 

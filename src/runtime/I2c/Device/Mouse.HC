@@ -8,6 +8,7 @@ U0 _I2cWinMsUpdate()
                 0,
                 i2c.ms->report[3] & 1,
                 i2c.ms->report[3] & 2);
+            ms_hard.timestamp = GetTSC;
         }
         MemCpy(&i2c.ms->last_report, i2c.ms->report, 16);
     }

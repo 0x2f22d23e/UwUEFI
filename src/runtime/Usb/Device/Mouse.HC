@@ -8,6 +8,7 @@ U0 _UsbWinMsUpdate()
                 ms.pos.z - usb.ms->report[3](I8),
                 usb.ms->report[0] & (1 << 0),
                 usb.ms->report[0] & (1 << 1));
+            ms_hard.timestamp = GetTSC;
         }
         MemCpy(&usb.ms->last_report, usb.ms->report, 4);
     }
