@@ -102,9 +102,22 @@ def clang_format_header_files():
     )
 
 
+def clang_format_runtime_files():
+    TRY(
+        "find "
+        + build.project_path
+        + 'src/runtime -type f -name "*.HC" | xargs -I {} -n1 -r clang-format -i --style=file:'
+        + build.project_path
+        + ".clang-format {}"
+    )
+
 
 def refresh_build_path():
-    refresh_cmd = f"rm -rf {build.project_path}build && mkdir -p {build.project_path}build" if not build.coalesced else f"rm -f {build.project_path}build/BOOTX64.EFI"
+    refresh_cmd = (
+        f"rm -rf {build.project_path}build && mkdir -p {build.project_path}build"
+        if not build.coalesced
+        else f"rm -f {build.project_path}build/BOOTX64.EFI"
+    )
     TRY(refresh_cmd)
 
 
@@ -116,9 +129,13 @@ def generate_runtime_patch():
             [
                 f"rm -f {build.project_path}{runtime_c}",
                 f"mkdir {tmp_path}",
-                f"printf \"Silent(1);\n\" > {tmp_path}Runtime.HC" if build.silence_runtime_warnings else f"touch {tmp_path}Runtime.HC",
+                f'printf "Silent(1);\n" > {tmp_path}Runtime.HC'
+                if build.silence_runtime_warnings
+                else f"touch {tmp_path}Runtime.HC",
                 f"sed 's/^/src\\/runtime\\//' src/runtime/modules.txt | xargs cat >> {tmp_path}Runtime.HC",
-                f"printf \"Silent(0);\n\" >> {tmp_path}Runtime.HC" if build.silence_runtime_warnings else f"true",
+                f'printf "Silent(0);\n" >> {tmp_path}Runtime.HC'
+                if build.silence_runtime_warnings
+                else f"true",
                 f"{build.tools_path}todotz.bin {tmp_path}Runtime.HC",
                 f"cat src/runtime/prologue.c > {runtime_c}",
                 f"xxd -n Runtime_HC_Z -i {tmp_path}Runtime.HC.Z >> {runtime_c}",
@@ -145,7 +162,7 @@ def build_tools_todotz():
 
 
 def build_uwuefi():
-    build_type_cmd = f"printf '#include \"{f"kernel.c" if build.coalesced else f"kernel_dyn.c"}\"' > {build.project_path}patches/build_type.c"
+    build_type_cmd = f"printf '#include \"{f'kernel.c' if build.coalesced else f'kernel_dyn.c'}\"' > {build.project_path}patches/build_type.c"
     edk2_build_cmd = f"build -a X64 -m {build.project_path}UwUEFI.inf -p {build.project_path}UwUEFI.dsc -b RELEASE -t GCC"
     TRY(
         f" && ".join(
@@ -201,6 +218,7 @@ def build_all():
     kill_running_gdb_processes()
     clang_format_src_files()
     clang_format_header_files()
+    clang_format_runtime_files()
     refresh_build_path()
     build_tools_todotz()
     generate_runtime_patch()
