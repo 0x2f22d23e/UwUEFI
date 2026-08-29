@@ -115,11 +115,14 @@ U0 I2cPoll()
         I2cCmd(v);
     }
 
+    while (I2cR32(DW_IC_RXFLR) < len) { }
     for (i = 0; i < len; i++) {
         i2c.ms->report[i] = I2cR32(DW_IC_DATA_CMD) & 0xFF;
     }
 
+    while (I2cR32(DW_IC_TXFLR) >= len - 4) { }
     I2cCmd(0x05, 0x00, 0x00, 0x00);
+    while (I2cR32(DW_IC_TXFLR) > 0) { }
 }
 
 U0 I2cTask()
