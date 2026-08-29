@@ -17,6 +17,8 @@
 
 #define I2C_PCI i2c.d.u8[2], i2c.d.u8[1], i2c.d.u8[0]
 
+#define I2C_TAP_TIMEOUT 1000
+
 #define I2C_TYPE_DEFAULT 0
 #define I2C_TYPE_MOUSE 1
 
@@ -28,6 +30,7 @@ class CI2cDevice {
 class CI2cMouse : CI2cDevice {
     U8 report[16];
     U8 last_report[16];
+    Bool suppress_tap;
 };
 
 class CI2c {
