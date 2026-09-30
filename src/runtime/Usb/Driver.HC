@@ -180,6 +180,10 @@ U0 UsbScanHubPorts(I64 i)
 
 U0 UsbTask()
 {
+    CUefi* u = CORE0_32BIT_INIT;
+    if (u->disable_usb) {
+        return;
+    }
     if (!UsbInit) {
         return;
     }

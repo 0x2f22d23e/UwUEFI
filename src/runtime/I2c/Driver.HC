@@ -127,6 +127,11 @@ U0 I2cPoll()
 
 U0 I2cTask()
 {
+    CUefi* u = CORE0_32BIT_INIT;
+    if (u->disable_i2c) {
+        return;
+    }
+
     if (!I2cInit) {
         return;
     }

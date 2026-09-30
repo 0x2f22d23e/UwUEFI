@@ -9,9 +9,11 @@
 CUefi* u = (CUefi*)CORE0_32BIT_INIT;
 CFileData bootIni;
 CFileData bootEfi;
+CFileData bootstrapIsoC;
 
 CHAR16* IniFilePath = L"\\boot.ini";
 CHAR16* EfiFilePath = L"\\EFI\\BOOT\\BOOTX64.EFI";
+CHAR16* BootstrapIsoCFilePath = L"\\Bootstrap.ISO.C";
 CHAR16* IsoFilePath = L"\\TempleOS.ISO";
 
 BOOLEAN LegacyKbdMs = TRUE;
@@ -20,6 +22,9 @@ UINT64 MaxTotalMemory = 0;
 BOOLEAN NvmeAutoMount = FALSE;
 UINT8 NvmePartition = 0;
 BOOLEAN SingleCore = FALSE;
+BOOLEAN UseBootstrapIsoC = FALSE;
+BOOLEAN UsbOff = FALSE;
+BOOLEAN I2cOff = FALSE;
 
 EFI_STATUS ExitUefi(EFI_HANDLE ImageHandle)
 {
@@ -95,6 +100,16 @@ void ParseIniFile(UINT64 FileSize)
                 NvmePartition = u64;
             }
         };
+        if (!MEMCMP((UINT8*)&key, (UINT8*)"UseBootstrap", 12)) {
+            UseBootstrapIsoC = !MEMCMP((UINT8*)&value, (UINT8*)"on", 2);
+        }
+        if (!MEMCMP((UINT8*)&key, (UINT8*)"Usb", 3)) {
+            UsbOff = !MEMCMP((UINT8*)&value, (UINT8*)"off", 3);
+        }
+        if (!MEMCMP((UINT8*)&key, (UINT8*)"I2c", 3)) {
+            I2cOff = !MEMCMP((UINT8*)&value, (UINT8*)"off", 3);
+        }
+
         // Print(L"Key: '%a', Value: '%a'\n", key, value);
     }
 }
@@ -119,6 +134,17 @@ void LoadOperatingSystemFiles()
     FileSize = LoadFileAtAddress(Root, EfiFilePath, BOOT_EFI_PTR, FALSE);
     bootEfi.ptr = BOOT_EFI_PTR;
     bootEfi.size = FileSize;
+
+    bootstrapIsoC.ptr = 0;
+    bootstrapIsoC.size = 0;
+
+    if (UseBootstrapIsoC) {
+        FileSize = LoadFileAtAddress(Root, BootstrapIsoCFilePath, BOOTSTRAP_ISOC_PTR, FALSE);
+        if (FileSize != 0xffffffff) {
+            bootstrapIsoC.ptr = BOOTSTRAP_ISOC_PTR;
+            bootstrapIsoC.size = FileSize;
+        }
+    }
 
     FileSize = LoadFileAtAddress(Root, IsoFilePath, STD_ISO_PTR, TRUE);
     if (CrcCheck) {
@@ -170,6 +196,8 @@ void SetBootFilesInfo()
     u->boot_ini_size = bootIni.size;
     u->boot_efi_ptr = bootEfi.ptr;
     u->boot_efi_size = bootEfi.size;
+    u->bootstrap_isoc_ptr = bootstrapIsoC.ptr;
+    u->bootstrap_isoc_size = bootstrapIsoC.size;
 }
 
 void SetNvmeOptions()
@@ -396,6 +424,8 @@ UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE* SystemTable)
     u->sys_tbl_ptr = (UINT64)SystemTable;
     u->total_mem = ActualTotalMemory;
     SetNvmeOptions();
+    u->disable_usb = UsbOff;
+    u->disable_i2c = I2cOff;
 
     ExitUefi(ImageHandle);
 

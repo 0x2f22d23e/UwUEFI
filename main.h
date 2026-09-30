@@ -43,6 +43,7 @@ Out32(
 
 #define BOOT_INI_PTR 0x10000000
 #define BOOT_EFI_PTR 0x10000400
+#define BOOTSTRAP_ISOC_PTR 0x12000000
 
 #define CDIR_FILENAME_LEN 38
 #define CORE0_32BIT_INIT 0x9F00 // repurposed for CUefi struct
@@ -112,6 +113,10 @@ typedef struct {
     UINT32 boot_ini_size;
     BOOLEAN nvme_automount;
     UINT8 nvme_partition;
+    UINT64 bootstrap_isoc_ptr;
+    UINT32 bootstrap_isoc_size;
+    BOOLEAN disable_usb;
+    BOOLEAN disable_i2c;
 } __attribute__((packed)) CUefi;
 
 typedef struct {

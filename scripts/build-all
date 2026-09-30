@@ -153,7 +153,7 @@ def build_tools_todotz():
                 [
                     f"mkdir -p {build.tools_path}",
                     f"cd {build.tools_path}",
-                    f"git clone --depth=1 https://git.checksum.fail/alec/todotz",
+                    f"git clone --depth=1 ssh://git@git-csf-local:8022/alec/todotz",
                     f"g++ -o todotz.bin todotz/todotz.cpp",
                     f"rm -rf todotz",
                 ]
@@ -196,6 +196,7 @@ def build_disk_image():
                 f"mcopy -i {build.disk_image}@@1M {build.project_path}boot.ini ::/boot.ini || true",
                 f"mcopy -i {build.disk_image}@@1M {build.project_path}build/BOOTX64.EFI ::/EFI/BOOT/BOOTX64.EFI",
                 f"mcopy -i {build.disk_image}@@1M {build.project_path}iso/TempleOS.ISO ::/TempleOS.ISO",
+                f"mcopy -i {build.disk_image}@@1M {build.bootstrap_disk_image} ::/Bootstrap.ISO.C" if len(build.bootstrap_disk_image) > 0 else f"true"
             ]
         )
     )
@@ -213,6 +214,7 @@ def build_all():
     build.debug = False
     build.coalesced = False
     build.silence_runtime_warnings = True
+    build.bootstrap_disk_image = ""
     init_values()
     kill_running_qemu_processes()
     kill_running_gdb_processes()

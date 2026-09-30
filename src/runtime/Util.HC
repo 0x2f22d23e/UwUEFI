@@ -11,6 +11,10 @@ class CUefi {
     U32 boot_ini_size;
     U8 nvme_automount;
     U8 nvme_partition;
+    U64 bootstrap_isoc_ptr;
+    U32 bootstrap_isoc_size;
+    Bool disable_usb;
+    Bool disable_i2c;
 };
 
 U0 (*SseOn)() = "\x55\x48\x8b\xec\x0f\x20\xc0\x66\x25\xfb\xff\x66\x0d\x02\x00\x0f\x22\xc0\x0f\x20\xe0\x66\x0d\x00\x06\x0f\x22\xe0\x5d\xc3";
@@ -96,6 +100,13 @@ U0 RelocateBootFiles()
         u->boot_efi_ptr = MAlloc(size);
         MemCpy(u->boot_efi_ptr, src, size);
     }
+
+    src = u->bootstrap_isoc_ptr;
+    size = u->bootstrap_isoc_size;
+    if (src && size) {
+        u->bootstrap_isoc_ptr = MAlloc(size);
+        MemCpy(u->bootstrap_isoc_ptr, src, size);
+    }
 }
 RelocateBootFiles;
 
@@ -107,5 +118,21 @@ U0 LPutS(U16* name, Bool no_break = FALSE)
     }
     if (!no_break) {
         "\n";
+    }
+}
+
+#define BOOTSTRAP_TMP_FILE "::/Bootstrap.ISO.C"
+
+U0 Bootstrap(U8* path = BOOTSTRAP_TMP_FILE, Bool automount = TRUE)
+{
+    CUefi* u = CORE0_32BIT_INIT;
+    if (!u || !u->bootstrap_isoc_ptr || !u->bootstrap_isoc_size) {
+        PrintErr("No Bootstrap file found.\n");
+        return;
+    }
+    FileWrite(path, u->bootstrap_isoc_ptr, u->bootstrap_isoc_size);
+    if (automount) {
+        MountFile(path);
+        Cd("M:");
     }
 }

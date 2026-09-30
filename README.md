@@ -44,6 +44,12 @@ You can put a `boot.ini` in `/` on your filesystem to set boot time options. Use
 
 `MultiCore=off` to disable MultiCore start.
 
+`UseBootstrap=on` to supply a Bootstrap disk image.
+
+`Usb=off` to disable USB support.
+
+`I2c=off` to disable I2c support.
+
 ###### NVME RELATED OPTIONS
 
 `NvmeAutoMount=on` to auto-mount an existing RedSea filesystem on the NVMe device. The device will mount as `T:` and the home folder will be set to `T:/Home`.
@@ -51,6 +57,14 @@ You can put a `boot.ini` in `/` on your filesystem to set boot time options. Use
 `NvmePartition=#` to specify the GPT partition number (default=2) of the RedSea filesystem to auto-mount.
 
 You can run `NvmeInstall;` to ⚠️<span style="color:red;font-weight:bold">wipe</span>⚠️ and auto-partition the NVMe device with a 64MB EFI partition containing the bootloader and `TempleOS.ISO`, and a 1GB writable RedSea partition.
+
+###### BOOTSTRAP RELATED OPTIONS
+
+A Bootstrap disk image can be used to add supplemental programs to your TempleOS installation (games, device drivers, networking, etc.)
+
+Modify `build.bootstrap_disk_image` in `scripts/build_all` to point to the path of your `Bootstrap.ISO.C`.
+
+The `Bootstrap` function will auto-mount the ISO.C image using `BOOTSTRAP_TMP_FILE` by default, or you can supply `(path, automount)` parameters.
 
 ### TROUBLESHOOTING
 
