@@ -8,7 +8,7 @@ A 萌え萌えキュン UEFI bootloader for TempleOS
 
 The bootloader provides the necessary steps to: load the TempleOS Standard ISO into a RAM disk, extract the Kernel to `BOOT_RAM_BASE`, and live-patch minimal required functions to boot the system.
 
-The bootloader runtime adds support for: NVMe devices, to allow persistent storage; and USB keyboard/mouse.
+The bootloader runtime adds support for: NVMe devices, to allow persistent storage; USB keyboard/mouse, and basic I2C trackpad mouse (for supported devices)
 
 ### HOWTO
 
