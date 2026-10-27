@@ -151,9 +151,9 @@ def build_tools_todotz():
         TRY(
             f" && ".join(
                 [
-                    f"mkdir -p {build.tools_path}",
+                    f"mkdir -p {build.tools_path}todotz",
                     f"cd {build.tools_path}",
-                    f"git clone --depth=1 ssh://git@git-csf-local:8022/alec/todotz",
+                    f"wget -q -O todotz/todotz.cpp https://raw.githubusercontent.com/0x2f22d23e/tosutils/refs/heads/master/todotz/todotz.cpp",
                     f"g++ -o todotz.bin todotz/todotz.cpp",
                     f"rm -rf todotz",
                 ]
