@@ -2,7 +2,7 @@
 
 A 萌え萌えキュン UEFI bootloader for TempleOS
 
-![TempleOS running on some UEFI systems with no BIOS](https://git.checksum.fail/alec/UwUEFI/raw/branch/main/example.gif)
+![TempleOS running on some UEFI systems with no BIOS](https://github.com/0x2f22d23e/UwUEFI/blob/main/example.gif?raw=true)
 
 ### INFO
 
@@ -12,7 +12,7 @@ The bootloader runtime adds support for: NVMe devices, to allow persistent stora
 
 ### HOWTO
 
-You can grab pre-built files from [Releases](https://git.checksum.fail/alec/UwUEFI/releases), or build them yourself using the instructions below.
+You can grab pre-built files from [Releases](https://github.com/0x2f22d23e/UwUEFI/releases), or build them yourself using the instructions below.
 
 You can write the disk image to a flash drive with a utility such as `dd`, or create a EFI-bootable filesystem on a flash drive, then copy `build/BOOTX64.EFI` to `/EFI/BOOT/`, and `iso/TempleOS.ISO` to `/` on your filesystem.
 
@@ -26,7 +26,7 @@ You will need to modify `build.edk2_path` in `scripts/build-all` to specify the 
 
 ### (Optional: Coalesce the Kernel patches)
 
-This can result in a *slightly* smaller file size for `build/BOOTX64.EFI`. This build option is used for [releases](https://git.checksum.fail/alec/UwUEFI/releases).
+This can result in a *slightly* smaller file size for `build/BOOTX64.EFI`. This build option is used for [releases](https://github.com/0x2f22d23e/UwUEFI/releases).
 
 After initial build, set `build.coalesced = True` in `scripts/build-all` and re-run the build.
 
